@@ -26,6 +26,7 @@ class ArduinoSerial:
             ups = data["ups"]
 
             print(f"BAT1={bat1}V BAT2={bat2}V UPS={ups}V")
+            return data
 
         except json.JSONDecodeError:
             # это была не телеметрия (например ответ на команду)
