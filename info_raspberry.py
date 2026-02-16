@@ -5,7 +5,6 @@ import subprocess
 def read_temp():
     result = subprocess.run(['vcgencmd', 'measure_temp'], capture_output=True)
     temp_str = result.stdout.decode().strip()
-    # пример: "temp=54.2'C"
     temp_val = float(temp_str.split('=')[1].replace("'C",""))
     return temp_val
 

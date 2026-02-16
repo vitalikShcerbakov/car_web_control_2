@@ -1,0 +1,121 @@
+body {
+  margin: 0;
+  font-family: sans-serif;
+  background: #0f1115;
+  color: #fff;
+}
+
+/* верхняя панель */
+.top-bar {
+  padding: 8px 15px;
+  background: #1a1d24;
+  text-align: right;
+}
+
+.ws-status {
+  font-weight: bold;
+}
+
+/* сетка */
+.dashboard {
+  display: grid;
+  grid-template-columns: 260px 1fr 260px;
+  grid-template-rows: auto 200px;
+  gap: 15px;
+  padding: 15px;
+  height: calc(100vh - 40px);
+  box-sizing: border-box;
+}
+
+.card {
+  background: #1a1d24;
+  border-radius: 12px;
+  padding: 15px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.4);
+}
+
+/* камера */
+.camera-card {
+  grid-column: 2;
+  grid-row: 1;
+  text-align: center;
+}
+
+.camera-card img {
+  width: 100%;
+  max-width: 640px;
+  border-radius: 10px;
+}
+
+/* скорость */
+.speed-card input {
+  width: 100%;
+}
+
+.speed-value {
+  display: block;
+  margin-top: 10px;
+  font-size: 32px;
+  font-weight: bold;
+  text-align: center;
+  color: #4CAF50;
+}
+
+/* статус */
+.status-card span {
+  float: right;
+  font-weight: bold;
+}
+
+.status-card div {
+  margin: 4px 0;
+}
+
+/* управление */
+.controls {
+  grid-column: 1 / span 3;
+  grid-row: 2;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.controls-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 80px);
+  gap: 10px;
+}
+
+button {
+  width: 80px;
+  height: 60px;
+  font-size: 20px;
+  border: none;
+  border-radius: 10px;
+  background: #2a2f3a;
+  color: white;
+  cursor: pointer;
+  transition: 0.15s;
+}
+
+button:hover {
+  background: #4CAF50;
+}
+
+/* мобильная адаптация */
+@media (max-width: 900px) {
+  .dashboard {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto;
+    height: auto;
+  }
+
+  .camera-card {
+    grid-column: 1;
+  }
+
+  .controls {
+    grid-column: 1;
+  }
+}
+
