@@ -67,6 +67,20 @@ button {
   </div>
 </div>
 
+<!-- Информация по raspberyy, акб  -->
+<div class="status-panel" style="margin-top:20px; background:#222; padding:15px; border-radius:10px;">
+  <h3>🔋 Статус батарей</h3>
+  BAT1: <span id="bat1">--</span><br>
+  BAT2: <span id="bat2">--</span><br>
+  UPS:  <span id="ups">--</span>
+
+  <h3>🌡️ Raspberry Pi</h3>
+  CPU Temp: <span id="cpuTemp">--</span><br>
+  CPU Load: <span id="cpuLoad">--</span><br>
+  RAM: <span id="ramLoad">--</span><br>
+  Disk: <span id="diskLoad">--</span>
+</div>
+
 <div>
   <button onclick="sendWithSpeed(150, 0)">↑</button>
 </div>
@@ -84,6 +98,41 @@ const ws = new WebSocket(`ws://${location.host}/ws`);
 let gas = 0;
 let steer = 0;
 let currentSpeed = 150; // текущая скорость (по умолчанию 150)
+
+
+// Объект для хранения последних данных
+let statusData = {};
+
+// Когда приходит сообщение
+ws.onmessage = (event) => {
+    try {
+        statusData = JSON.parse(event.data);
+
+        // Обновляем DOM с батареями
+        if (statusData.battery) {
+            document.getElementById("bat1").textContent = statusData.battery.bat1.toFixed(2) + " V";
+            document.getElementById("bat2").textContent = statusData.battery.bat2.toFixed(2) + " V";
+            document.getElementById("ups").textContent  = statusData.battery.ups.toFixed(2)  + " V";
+        }
+
+        // Обновляем DOM с системной информацией
+        if (statusData.raspi_temp !== undefined) {
+            document.getElementById("cpuTemp").textContent = statusData.raspi_temp.toFixed(1) + " °C";
+        }
+        if (statusData.cpu !== undefined) {
+            document.getElementById("cpuLoad").textContent = statusData.cpu.toFixed(1) + " %";
+        }
+        if (statusData.memory !== undefined) {
+            document.getElementById("ramLoad").textContent = statusData.memory.toFixed(1) + " %";
+        }
+        if (statusData.disk !== undefined) {
+            document.getElementById("diskLoad").textContent = statusData.disk.toFixed(1) + " %";
+        }
+    } catch (e) {
+        console.error("Ошибка парсинга JSON:", e, event.data);
+    }
+};
+
 
 // Обновление отображения скорости
 function updateSpeedDisplay() {
