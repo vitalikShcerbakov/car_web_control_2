@@ -57,9 +57,10 @@ async def websocket_endpoint(ws: WebSocket):
             data = await ws.receive_json()
             gas = data.get("gas", 0)
             steer = data.get("steer", 0)
-
             arduino.send(gas, steer)
-            arduino.voltage_read()
+
+            info_battery = arduino.voltage_read()
+            await ws.send_json(info_battery)
 
     except Exception as e:
         print("WS disconnected:", e)
