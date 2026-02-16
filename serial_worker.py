@@ -1,5 +1,6 @@
 import serial
 import time
+import json
 
 class ArduinoSerial:
     def __init__(self, port="/dev/ttyUSB0", baudrate=115200):
