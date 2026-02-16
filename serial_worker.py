@@ -15,3 +15,17 @@ class ArduinoSerial:
 
     def close(self):
         self.ser.close()
+
+    def voltage_read(self):
+        line = self.ser.readline().decode().strip()
+        try:
+            data = json.loads(line)
+            bat1 = data["bat1"]
+            bat2 = data["bat2"]
+            ups = data["ups"]
+
+            print(f"BAT1={bat1}V BAT2={bat2}V UPS={ups}V")
+
+        except json.JSONDecodeError:
+            # это была не телеметрия (например ответ на команду)
+            print("RAW:", line)
