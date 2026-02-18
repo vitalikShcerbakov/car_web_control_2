@@ -41,8 +41,8 @@ function updateBattery(id, value) {
     const el = document.getElementById(id);
     el.textContent = value.toFixed(2) + " V";
 
-    if (value > 12) el.style.color = "#4CAF50";
-    else if (value > 11) el.style.color = "#FFC107";
+    if (value > 4) el.style.color = "#4CAF50";
+    else if (value > 3) el.style.color = "#FFC107";
     else el.style.color = "#F44336";
 }
 

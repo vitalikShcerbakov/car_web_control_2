@@ -1,13 +1,14 @@
 import time
 
 import cv2
-from fastapi import FastAPI, WebSocket
+from fastapi import FastAPI, WebSocket, Request
 from fastapi.responses import HTMLResponse, StreamingResponse
+from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 from picamera2 import Picamera2
 
 from serial_worker import ArduinoSerial
-from info_raspberry import read_temp, read_system_info
+from info_raspberry import read_temp, read_system_info, get_throttled_status
 
 
 picam2 = Picamera2()
@@ -31,6 +32,7 @@ def gen_frames():
 app = FastAPI()
 arduino = ArduinoSerial(port="/dev/ttyUSB0")
 app.mount("/static", StaticFiles(directory="static"), name="static")
+templates = Jinja2Templates(directory="templates")
 
 
 @app.get("/", response_class=HTMLResponse)
@@ -61,6 +63,7 @@ async def websocket_endpoint(ws: WebSocket):
             data_to_send["battery"] = info_battery
             data_to_send["raspi_temp"] = read_temp()
             data_to_send["system_info"] = read_system_info()
+            data_to_send["throttled_status"] = get_throttled_status()
             await ws.send_json(data_to_send)
 
     except Exception as e:
