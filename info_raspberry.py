@@ -18,6 +18,55 @@ def read_system_info():
     }
 
 
+def get_throttled_status():
+    """ Диагностика проблем с питанием и перегревом. """
+    THROTTLE_FLAGS = {
+        0: ("undervoltage_now", "Пониженное напряжение сейчас"),
+        1: ("freq_capped_now", "Частота CPU ограничена сейчас"),
+        2: ("throttled_now", "Троттлинг из-за температуры сейчас"),
+        3: ("soft_temp_limit_now", "Достигнут мягкий температурный лимит сейчас"),
+        16: ("undervoltage_past", "Ранее было пониженное напряжение"),
+        17: ("freq_capped_past", "Ранее частота CPU ограничивалась"),
+        18: ("throttled_past", "Ранее был троттлинг из-за температуры"),
+        19: ("soft_temp_limit_past", "Ранее достигался мягкий температурный лимит"),
+    }
+    try:
+        output = subprocess.check_output(
+            ["vcgencmd", "get_throttled"],
+            text=True
+        ).strip()
+
+        # throttled=0x50005 → 0x50005
+        hex_value = output.split("=")[1]
+        value = int(hex_value, 16)
+
+        result = {
+            "raw": hex_value,
+            "value": value,
+            "flags": {},
+            "issues_now": [],
+            "issues_past": [],
+            "ok": value == 0
+        }
+
+        for bit, (key, description) in THROTTLE_FLAGS.items():
+            active = bool(value & (1 << bit))
+            result["flags"][key] = active
+
+            if active:
+                if bit < 16:
+                    result["issues_now"].append(description)
+                else:
+                    result["issues_past"].append(description)
+
+        return result
+
+    except FileNotFoundError:
+        return {"error": "vcgencmd not found (not a Raspberry Pi?)"}
+    except Exception as e:
+        return {"error": str(e)}
+
+
 if __name__ == "__main__":
     print(read_temp())
     print(read_system_info())
