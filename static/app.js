@@ -31,8 +31,9 @@ ws.onmessage = (event) => {
             setText("diskLoad", data.system_info.disk_percent, "%");
         }
         if (data.throttled_status) {
-            console.log('throttled_status: ', data.throttled_status)
-            setText("throttled", data.throttled_status);
+	    console.log('Throttled status: ', data.throttled_status);
+	    document.getElementById("throttled").textContent = data.throttled_status.issues_now.join(",<br>");
+
         }
 
     } catch (e) {
