@@ -7,6 +7,8 @@ from fastapi.staticfiles import StaticFiles
 from picamera2 import Picamera2
 
 from serial_worker import ArduinoSerial
+from info_raspberry import read_temp, read_system_info
+
 
 picam2 = Picamera2()
 picam2.configure(picam2.create_video_configuration(
@@ -31,6 +33,11 @@ arduino = ArduinoSerial(port="/dev/ttyUSB0")
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 
+@app.get("/", response_class=HTMLResponse)
+async def index(request: Request):
+    return templates.TemplateResponse("index.html", {"request": request})
+
+
 @app.get("/video")
 def video_feed():
     return StreamingResponse(
@@ -38,14 +45,9 @@ def video_feed():
         media_type="multipart/x-mixed-replace; boundary=frame")
 
 
-@app.get("/")
-def index():
-    with open("static/index.html", "r", encoding="utf-8") as f:
-        return HTMLResponse(f.read())
-
-
 @app.websocket("/ws")
 async def websocket_endpoint(ws: WebSocket):
+    data_to_send = dict()
     await ws.accept()
     print("WS connected")
     try:
@@ -54,7 +56,12 @@ async def websocket_endpoint(ws: WebSocket):
             gas = data.get("gas", 0)
             steer = data.get("steer", 0)
             arduino.send(gas, steer)
+
             info_battery = arduino.voltage_read()
-            await ws.send_json(info_battery)
+            data_to_send["battery"] = info_battery
+            data_to_send["raspi_temp"] = read_temp()
+            data_to_send["system_info"] = read_system_info()
+            await ws.send_json(data_to_send)
+
     except Exception as e:
         print("WS disconnected:", e)
