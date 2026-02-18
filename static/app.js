@@ -30,6 +30,10 @@ ws.onmessage = (event) => {
             setText("ramLoad", data.system_info.memory_percent, "%");
             setText("diskLoad", data.system_info.disk_percent, "%");
         }
+        if (data.throttled_status) {
+            console.log('throttled_status: ', data.throttled_status)
+            setText("throttled", data.throttled_status);
+        }
 
     } catch (e) {
         console.error("JSON error", e);
