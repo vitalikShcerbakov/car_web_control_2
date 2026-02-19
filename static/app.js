@@ -14,26 +14,27 @@ ws.onerror = () => wsStatus.textContent = "🔴 ERROR";
 ws.onmessage = (event) => {
     try {
         const data = JSON.parse(event.data);
-
         if (data.battery) {
             updateBattery("bat1", data.battery.bat1);
             updateBattery("bat2", data.battery.bat2);
             updateBattery("ups", data.battery.ups);
         }
-
         if (data.raspi_temp !== undefined) {
             updateTemp(data.raspi_temp);
         }
-
         if (data.system_info) {
             setText("cpuLoad", data.system_info.cpu_percent, "%");
             setText("ramLoad", data.system_info.memory_percent, "%");
             setText("diskLoad", data.system_info.disk_percent, "%");
         }
         if (data.throttled_status) {
-	    console.log('Throttled status: ', data.throttled_status);
-	    document.getElementById("throttled").textContent = data.throttled_status.issues_now.join(",<br>");
-
+	        document.getElementById("throttled").textContent = data.throttled_status.issues_now.join(",<br>");
+        }
+        if (data.obstacle) {
+	        document.getElementById("obstacleInFront").textContent = data.obstacle.obstacleInFront;
+	        document.getElementById("sensorValueFront").textContent = data.obstacle.sensorValueFront;
+	        document.getElementById("obstacleInBack").textContent = data.obstacle.obstacleInBack;
+	        document.getElementById("sensorValueBack").textContent = data.obstacle.sensorValueBack;
         }
 
     } catch (e) {

@@ -19,7 +19,13 @@
     <h3>⚡ Скорость</h3>
     <input type="range" id="speedSlider" min="0" max="255" value="150" step="5">
     <span class="speed-value" id="speedValue">150</span>
+      <h3>Препятствие:</h3>
+      <div>Перед: <span id="obstacleInFront">--</span></div>
+      <div>Знач: <span id="sensorValueFront">--</span></div>
+      <div>Зад: <span id="obstacleInBack">--</span></div>
+      <div>Знач: <span id="sensorValueBack">--</span></div>
   </div>
+
 
   <!-- Камера -->
   <div class="card camera-card">
@@ -34,14 +40,12 @@
     <div>BAT2 <span id="bat2">--</span></div>
     <div>UPS  <span id="ups">--</span></div>
 
-    <h3>🌡️ Raspberry</h3>
+    <h3>️Raspberry</h3>
     <div>Temp <span id="cpuTemp">--</span></div>
     <div>CPU  <span id="cpuLoad">--</span></div>
     <div>RAM  <span id="ramLoad">--</span></div>
     <div>Disk <span id="diskLoad">--</span></div>
     <div>Throttled status:<span id="throttled">--</span></div>
-
-
   </div>
 
   <!-- Управление -->
