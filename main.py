@@ -6,7 +6,7 @@ from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 
 from serial_worker import ArduinoSerial
-from info_raspberry import read_temp, read_system_info, get_throttled_status
+from info_raspberry import read_temp, read_system_info, get_throttled_status, detect_raspberry_pi
 from camera_service import (
     camera_available,
     PiCameraService,
@@ -20,7 +20,7 @@ else:
     camera = DummyCameraService()
 
 app = FastAPI()
-arduino = ArduinoSerial(port="/dev/ttyUSB0")
+arduino = ArduinoSerial()
 app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
 
@@ -48,6 +48,7 @@ def shutdown_event():
 
 @app.websocket("/ws")
 async def websocket_endpoint(ws: WebSocket):
+    is_raspberry_pi = detect_raspberry_pi()
     data_to_send = dict()
     await ws.accept()
     print("WS connected")
@@ -60,9 +61,11 @@ async def websocket_endpoint(ws: WebSocket):
 
             info_battery = arduino.voltage_read()
             data_to_send["battery"] = info_battery
-            data_to_send["raspi_temp"] = read_temp()
-            data_to_send["system_info"] = read_system_info()
-            data_to_send["throttled_status"] = get_throttled_status()
+
+            if is_raspberry_pi:
+                data_to_send["raspi_temp"] = read_temp()
+                data_to_send["system_info"] = read_system_info()
+                data_to_send["throttled_status"] = get_throttled_status()
             await ws.send_json(data_to_send)
 
     except Exception as e:
