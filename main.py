@@ -1,33 +1,23 @@
 import time
 
-import cv2
 from fastapi import FastAPI, WebSocket, Request
 from fastapi.responses import HTMLResponse, StreamingResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
-from picamera2 import Picamera2
 
 from serial_worker import ArduinoSerial
 from info_raspberry import read_temp, read_system_info, get_throttled_status
+from camera_service import (
+    camera_available,
+    PiCameraService,
+    DummyCameraService,
+)
 
-
-picam2 = Picamera2()
-picam2.configure(picam2.create_video_configuration(
-    main={"size": (320, 240), "format": "RGB888"}
-))
-picam2.start()
-
-
-def gen_frames():
-    while True:
-        frame = picam2.capture_array()
-        ret, buffer = cv2.imencode(
-            '.jpg', frame, [int(cv2.IMWRITE_JPEG_QUALITY), 60])
-        frame = buffer.tobytes()
-        yield (b'--frame\r\n'
-               b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
-        time.sleep(0.07)  # ~14 FPS для Pi3
-
+# Камера
+if camera_available:
+    camera = PiCameraService()
+else:
+    camera = DummyCameraService()
 
 app = FastAPI()
 arduino = ArduinoSerial(port="/dev/ttyUSB0")
@@ -42,9 +32,18 @@ async def index(request: Request):
 
 @app.get("/video")
 def video_feed():
+    if not camera_available:
+        # можно либо 503
+        pass
     return StreamingResponse(
         gen_frames(),
         media_type="multipart/x-mixed-replace; boundary=frame")
+
+
+@app.on_event("shutdown")
+def shutdown_event():
+    if camera_available and hasattr(camera, "picam2"):
+        camera.picam2.stop()
 
 
 @app.websocket("/ws")
