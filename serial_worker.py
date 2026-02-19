@@ -10,10 +10,10 @@ from serial.serialutil import SerialException
 
 
 class ArduinoSerial:
-    def __init__(self, baudrate=115200):
+    def __init__(self, baud_rate=115200):
         try:
             port = self._find_arduino_port()
-            self.ser = serial.Serial(port, baudrate, timeout=0.1)
+            self.ser = serial.Serial(port, baud_rate, timeout=0.1)
         except SerialException as e:
             print('Error serial: ', e)
 
@@ -23,9 +23,9 @@ class ArduinoSerial:
             1A86 — CH340 (клоны)
             0403 — FTDI
         """
-        ARDUINO_VIDS = (0x2341, 0x2A03, 0x1A86, 0x0403)
+        arduino_vids = (0x2341, 0x2A03, 0x1A86, 0x0403)
         for port in list_ports.comports():
-            if port.vid in ARDUINO_VIDS:
+            if port.vid in arduino_vids:
                 return port.device
         return None
 
@@ -39,7 +39,7 @@ class ArduinoSerial:
     def close(self):
         self.ser.close()
 
-    def voltage_read(self):
+    def port_read(self):
         line = self.ser.readline().decode().strip()
         try:
             data = json.loads(line)

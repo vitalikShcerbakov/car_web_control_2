@@ -59,14 +59,15 @@ async def websocket_endpoint(ws: WebSocket):
             steer = data.get("steer", 0)
             arduino.send(gas, steer)
 
-            info_battery = arduino.voltage_read()
-            data_to_send["battery"] = info_battery
-
-            if is_raspberry_pi:
-                data_to_send["raspi_temp"] = read_temp()
-                data_to_send["system_info"] = read_system_info()
-                data_to_send["throttled_status"] = get_throttled_status()
-            await ws.send_json(data_to_send)
+            info_arduino = arduino.port_read()
+            if info_arduino is not None:
+                data_to_send["battery"] = info_arduino.get("battery")
+                data_to_send["obstacle"] = info_arduino.get("obstacle")
+                if is_raspberry_pi:
+                    data_to_send["raspi_temp"] = read_temp()
+                    data_to_send["system_info"] = read_system_info()
+                    data_to_send["throttled_status"] = get_throttled_status()
+                await ws.send_json(data_to_send)
 
     except Exception as e:
         print("WS disconnected:", e)
