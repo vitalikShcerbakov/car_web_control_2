@@ -36,7 +36,7 @@ def video_feed():
         # можно либо 503
         pass
     return StreamingResponse(
-        gen_frames(),
+        camera.gen_frames(),
         media_type="multipart/x-mixed-replace; boundary=frame")
 
 
