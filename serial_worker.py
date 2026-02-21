@@ -50,7 +50,7 @@ class ArduinoSerial:
 
     def reset(self):
         """ Перезагрзка arduino"""
-        ser.setDTR(False)
+        self.ser.setDTR(False)
         time.sleep(0.1)
-        ser.setDTR(True)
+        self.ser.setDTR(True)
         print("arduino перезагруженна.")
