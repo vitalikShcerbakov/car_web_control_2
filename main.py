@@ -71,3 +71,4 @@ async def websocket_endpoint(ws: WebSocket):
 
     except Exception as e:
         print("WS disconnected:", e)
+        arduino.reset()

@@ -47,3 +47,10 @@ class ArduinoSerial:
         except json.JSONDecodeError:
             # это была не телеметрия (например ответ на команду)
             print("RAW:", line)
+
+    def reset(self):
+        """ Перезагрзка arduino"""
+        ser.setDTR(False)
+        time.sleep(0.1)
+        ser.setDTR(True)
+        print("arduino перезагруженна.")
