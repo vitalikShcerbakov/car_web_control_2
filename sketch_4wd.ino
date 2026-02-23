@@ -1,14 +1,12 @@
-// Подключение Инфракрасный датчик обнаружения препятствий YL-63 (FC-51)
-const int SENSOR_FRONT_PIN = A3;
-const int SENSOR_BACK_PIN = A4;
-int sensorValueBack = 0;
-int sensorValueFront = 0;
-bool obstacleInBack = false;
-bool obstacleInFront = false;
-int commandG = 0; // последняя команда вперед/назад
-int commandR = 0; // последняя команда поворота
+#include <Servo.h>
+Servo myservo;
+int pos = 0;
+
+// Подключение фонаря
+int lightPin = 2; 
 
 // ================= 4WD Arduino + L293D Motor Shield =================
+
 // PWM пины для скорости моторов
 #define M1_PWM 11 // левый передний
 #define M2_PWM 3  // левый задний
@@ -57,22 +55,21 @@ float voltageBATT = 0;
 float voltageBATT2 = 0;
 float voltageUPS = 0;
 
-// Переменные таймера
-unsigned long lastSensorRead = 0;
-const unsigned long sensorInterval = 100; // читаем датчики каждые 50 мс
-unsigned long lastJsonSend = 0;
-const unsigned long jsonInterval = 200; // отправляем JSON каждые 100 мс
-
 unsigned long lastBatteryRead = 0;
-const unsigned long batteryInterval = 250; // читаем напрежение на банках каждые
-
+const unsigned long batteryInterval = 200;
 
 String input = "";
 byte latch_state = 0;
 
+int command = "";
+
+int angleCam = 90;
+bool newCamCommand = false;
+
 void setup() {
   Serial.begin(115200);
-
+  pinMode(lightPin, OUTPUT);
+  myservo.attach(10);
   pinMode(MOTORLATCH, OUTPUT);
   pinMode(MOTORDATA, OUTPUT);
   pinMode(MOTORCLK, OUTPUT);
@@ -88,8 +85,7 @@ void setup() {
 }
 
 void loop() {
-  // --- Таймер батареи ---
-  unsigned long now = millis();
+
   // --- Чтение команд с Raspberry ---
   while (Serial.available()) {
     char c = Serial.read();
@@ -100,58 +96,37 @@ void loop() {
       input += c;
     }
   }
+  // управление камерой
+  if (newCamCommand) {
+    setServoAngle(angleCam);
+    newCamCommand = false;
+  }
+  // --- Таймер батареи ---
+  unsigned long now = millis();
 
-  // --- Чтение напрежение батарей -----
   if (now - lastBatteryRead >= batteryInterval) {
     lastBatteryRead = now;
 
     readAllBatteries();
-   // sendBatteryJson();
-  }
-
-    // --- Чтение датчиков с интервалом ---
-  if (now - lastSensorRead >= sensorInterval) {
-    lastSensorRead = now;
-
-  // -- обнаружения препятствий --
-  sensorValueFront = readSensorAveraged(SENSOR_FRONT_PIN);
-  sensorValueBack = readSensorAveraged(SENSOR_BACK_PIN);
-
-  obstacleInFront = (sensorValueFront < 560);
-  obstacleInBack  = (sensorValueBack < 560);
-  }
-
-  // --- вызываем drive каждый цикл ---
-  drive(commandG, commandR);
-
-
-  // --- Отправка JSON с интервалом ---
-  if (now - lastJsonSend >= jsonInterval) {
-    lastJsonSend = now;
     sendToSerialPortJson();
   }
-
-    // ВРЕМЕННАЯ ОТЛАДКА
-  /*
-  static unsigned long lastDebug = 0;
-  if (now - lastDebug >= 1000) {
-    lastDebug = now;
-    Serial.print("Front: ");
-    Serial.print(sensorValueFront);
-    Serial.print(" (");
-    Serial.print(obstacleInFront ? "BLOCKED" : "FREE");
-    Serial.print(") Back: ");
-    Serial.print(sensorValueBack);
-    Serial.print(" (");
-    Serial.print(obstacleInBack ? "BLOCKED" : "FREE");
-    Serial.println(")");
-  }
-  */
 }
 
 // ================= Обработка команд =================
 void parseCommand(String cmd) {
   //Serial.print("Received: "); Serial.println(cmd);
+
+  // Управление фонариком
+  if (cmd.startsWith("light:")) {
+    command = cmd.substring(7, cmd.indexOf(';')).toInt();
+    controlLight(command);
+  }  
+
+  // Управление камерой
+  if (cmd.startsWith("CC:")) {
+    angleCam = cmd.substring(3, cmd.indexOf(';')).toInt();
+    newCamCommand = true;
+  }
 
   int gIndex = cmd.indexOf("G:");
   int rIndex = cmd.indexOf("R:");
@@ -160,27 +135,39 @@ void parseCommand(String cmd) {
 
   int gVal = cmd.substring(gIndex + 2, cmd.indexOf(';')).toInt();
   int rVal = cmd.substring(rIndex + 2).toInt();
-    // сохраняем команду, не вызываем drive() здесь
-  commandG = gVal;
-  commandR = rVal;
+
+  drive(gVal, rVal);
 }
 
+// ================= Управление светом ================
+void controlLight(int state){
+  digitalWrite(lightPin, state);
+}
+// ================= Упралвение камерй (servo) ========
+void setServoAngle(int angle) {
+  // ограничиваем диапазон
+  if (angle < 25) {
+    angle = 25;
+  }
+  if (angle > 95) {
+    angle = 95;
+  }
+
+  myservo.write(angle);
+}
 // ================= Логика движения =================
 void drive(int G, int R) {
   float kLeft  = 1.00;
-  float kRight = 1.00;
+  float kRight = 1.00;  // замедляем правый борт
 
-  int appliedG = G;
-  // запрещаем движение вперед/назад при препятствии
-  if (G > 20 && obstacleInFront) appliedG = 0;
-  if (G < -20 && obstacleInBack)  appliedG = 0;
+  int left  = constrain(-(G + R) * kLeft, -255, 255);
+  int right = constrain(-(G - R) * kRight, -255, 255);
 
-  int left  = constrain(-(appliedG + R) * kLeft, -255, 255);
-  int right = constrain(-(appliedG - R) * kRight, -255, 255);
-
-
+  // Левый борт
   setMotor(1, left, true);
   setMotor(2, left, true);
+
+  // Правый борт — физическая инверсия
   setMotor(3, right, false);
   setMotor(4, right, false);
 }
@@ -246,10 +233,21 @@ void readAllBatteries() {
   voltageUPS   = readVoltage(upsPin,        R1_UPS,   R2_UPS);
 }
 
+// ========= Формирование json ====================
+void sendBatteryJson() {
+  Serial.print("{\"bat1\":");
+  Serial.print(voltageBATT, 2);
+  Serial.print(",\"bat2\":");
+  Serial.print(voltageBATT2, 2);
+  Serial.print(",\"ups\":");
+  Serial.print(voltageUPS, 2);
+  Serial.println("}");
+}
+
 void sendToSerialPortJson() {
   Serial.print("{");
 
-  Serial.print("\"obstacle\":{");
+ /* Serial.print("\"obstacle\":{");
   Serial.print("\"obstacleInFront\":");
   Serial.print(obstacleInFront ? "true" : "false");
   Serial.print(",\"obstacleInBack\":");
@@ -259,9 +257,9 @@ void sendToSerialPortJson() {
   Serial.print(",\"sensorValueBack\":");
   Serial.print(sensorValueBack);
   Serial.print("}");
-
+*/
   // вложенный объект battery
-  Serial.print(",\"battery\":{");
+  Serial.print("\"battery\":{");
   Serial.print("\"bat1\":");
   Serial.print(voltageBATT, 2);
   Serial.print(",\"bat2\":");
@@ -271,15 +269,4 @@ void sendToSerialPortJson() {
   Serial.print("}");
 
   Serial.println("}");
-}
-
-// ===== ФУНКЦИЯ ЧТЕНИЯ С УСРЕДНЕНИЕМ =====
-int readSensorAveraged(int SENSOR_PIN) {
-  long sum = 0;
-
-  for (int i = 0; i < 5; i++) {
-    sum += analogRead(SENSOR_PIN);
-  }
-
-  return sum / 5;
 }
