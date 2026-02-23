@@ -64,6 +64,10 @@ async def websocket_endpoint(ws: WebSocket):
             if camera_angle is not None:
                 arduino.send_camera(camera_angle)
 
+            control_light = data.get("light")
+            if control_light is not None:
+                arduino.send_control_light(control_light)
+
             info_arduino = arduino.port_read()
             if info_arduino is not None:
                 data_to_send["battery"] = info_arduino.get("battery")

@@ -134,6 +134,20 @@ document.addEventListener("keyup", e => {
   sendWithSpeed(gas, steer);
 });
 
+let lightOn = false;
+
+function toggleLight() {
+  lightOn = !lightOn;
+
+  document.getElementById("lightStatus").textContent = lightOn ? "ON" : "OFF";
+  document.getElementById("lightStatus").style.color = lightOn ? "#4CAF50" : "#F44336";
+  document.getElementById("lightBtn").textContent = lightOn ? "ВЫКЛ" : "ВКЛ";
+
+  ws.send(JSON.stringify({
+    light: lightOn ? 1 : 0
+  }));
+}
+
 // init
 updateSpeedDisplay();
 
