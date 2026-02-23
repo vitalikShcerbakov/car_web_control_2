@@ -42,6 +42,11 @@ class ArduinoSerial:
         self.ser.write(cmd.encode())
         print(f"send camera: {cmd.strip()}")
 
+    def send_control_light(self, state):
+        cmd = f"light: {state}\n"
+        print(f'send_control_light: {cmd}')
+        self.ser.write(cmd.encode())
+
     def close(self):
         self.ser.close()
 
