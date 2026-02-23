@@ -63,8 +63,19 @@
       <button onclick="sendWithSpeed(-150, 0)">↓</button>
       <div></div>
     </div>
-  </div>
+      <!-- управление камерой -->
+    <div class="card camera-control-card">
+      <h3>🎥 Управление камерой</h3>
 
+      <div class="cam-buttons">
+        <button onclick="moveCamera(1)">▲</button>
+        <button onclick="moveCamera(-1)">▼</button>
+      </div>
+      <div class="cam-angle">
+        Угол: <span id="camAngle">90</span>
+      </div>
+    </div>
+</div>
 </div>
 
 <script src="static/app.js"></script>

@@ -36,6 +36,12 @@ class ArduinoSerial:
         cmd = f"G:{gas};R:{steer}\n"
         self.ser.write(cmd.encode())
 
+    def send_camera(self, angle: int):
+        angle = max(25, min(95, angle))
+        cmd = f"CC:{angle};\n"
+        self.ser.write(cmd.encode())
+        print(f"send camera: {cmd.strip()}")
+
     def close(self):
         self.ser.close()
 

@@ -57,7 +57,12 @@ async def websocket_endpoint(ws: WebSocket):
             data = await ws.receive_json()
             gas = data.get("gas", 0)
             steer = data.get("steer", 0)
-            arduino.send(gas, steer)
+            if gas is not None and steer is not None:
+                arduino.send(gas, steer)
+
+            camera_angle = data.get("camera_angle")
+            if camera_angle is not None:
+                arduino.send_camera(camera_angle)
 
             info_arduino = arduino.port_read()
             if info_arduino is not None:

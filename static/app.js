@@ -92,7 +92,32 @@ function sendWithSpeed(g, s) {
   steer = s;
   ws.send(JSON.stringify({ gas, steer }));
 }
+let camAngle = 90;   // стартовое положение
+const CAM_MIN = 25;
+const CAM_MAX = 95;
 
+function moveCamera(step) {
+  camAngle += step;
+
+  if (camAngle < CAM_MIN) camAngle = CAM_MIN;
+  if (camAngle > CAM_MAX) camAngle = CAM_MAX;
+
+  document.getElementById("camAngle").textContent = camAngle;
+
+  ws.send(JSON.stringify({
+    camera_angle: camAngle
+  }));
+}
+// клавиатура
+document.addEventListener("keydown", e => {
+  if (e.repeat) return;
+  if (e.key === "ArrowUp" || e.key === "+") {
+    moveCamera(1);
+  }
+  if (e.key === "ArrowDown" || e.key === "-") {
+    moveCamera(-1);
+  }
+});
 // WSAD
 document.addEventListener("keydown", e => {
   if (e.repeat) return;
