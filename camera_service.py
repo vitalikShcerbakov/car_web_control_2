@@ -15,7 +15,6 @@ except ImportError:
 
 class BaseCamera:
     def gen_frames(self):
-        """Должен возвращать генератор кадров"""
         raise NotImplementedError
 
 
@@ -29,20 +28,48 @@ class PiCameraService(BaseCamera):
         )
         self.picam2.start()
 
+        # 🔍 загрузка каскада лиц
+        self.face_cascade = cv2.CascadeClassifier(
+            cv2.data.haarcascades + "haarcascade_frontalface_default.xml"
+        )
+
     def gen_frames(self):
         while True:
             frame = self.picam2.capture_array()
+
+            # Перевод в серый
+            gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+
+            # Детекция лиц
+            faces = self.face_cascade.detectMultiScale(
+                gray,
+                scaleFactor=1.2,
+                minNeighbors=5,
+                minSize=(30, 30),
+            )
+
+            # Рисуем рамки
+            for (x, y, w, h) in faces:
+                cv2.rectangle(
+                    frame,
+                    (x, y),
+                    (x + w, y + h),
+                    (0, 255, 0),
+                    2,
+                )
+
+            # Кодируем в JPEG
             ret, buffer = cv2.imencode(
                 ".jpg", frame, [int(cv2.IMWRITE_JPEG_QUALITY), 60]
             )
-            frame = buffer.tobytes()
+            frame_bytes = buffer.tobytes()
 
             yield (
                 b"--frame\r\n"
-                b"Content-Type: image/jpeg\r\n\r\n" + frame + b"\r\n"
+                b"Content-Type: image/jpeg\r\n\r\n" + frame_bytes + b"\r\n"
             )
 
-            time.sleep(0.07)  # ~14 FPS
+            time.sleep(0.07)
 
 
 class DummyCameraService(BaseCamera):
