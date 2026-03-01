@@ -119,3 +119,20 @@ button:hover {
   }
 }
 
+.light-card {
+  text-align: center;
+}
+
+.light-card button {
+  width: 120px;
+  height: 50px;
+  font-size: 18px;
+  margin-top: 10px;
+}
+
+.light-status {
+  margin-top: 10px;
+  font-weight: bold;
+  color: #F44336;
+}
+

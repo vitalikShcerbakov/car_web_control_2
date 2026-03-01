@@ -2,6 +2,14 @@ import subprocess
 
 import psutil
 
+def detect_raspberry_pi() -> bool:
+    try:
+        with open("/proc/device-tree/model") as f:
+            model = f.read().lower()
+            return "raspberry pi" in model
+    except Exception:
+        return False
+
 
 def read_temp():
     result = subprocess.run(['vcgencmd', 'measure_temp'], capture_output=True)

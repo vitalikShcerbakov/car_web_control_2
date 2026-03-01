@@ -14,26 +14,27 @@ ws.onerror = () => wsStatus.textContent = "🔴 ERROR";
 ws.onmessage = (event) => {
     try {
         const data = JSON.parse(event.data);
-
         if (data.battery) {
             updateBattery("bat1", data.battery.bat1);
             updateBattery("bat2", data.battery.bat2);
             updateBattery("ups", data.battery.ups);
         }
-
         if (data.raspi_temp !== undefined) {
             updateTemp(data.raspi_temp);
         }
-
         if (data.system_info) {
             setText("cpuLoad", data.system_info.cpu_percent, "%");
             setText("ramLoad", data.system_info.memory_percent, "%");
             setText("diskLoad", data.system_info.disk_percent, "%");
         }
         if (data.throttled_status) {
-	    console.log('Throttled status: ', data.throttled_status);
-	    document.getElementById("throttled").textContent = data.throttled_status.issues_now.join(",<br>");
-
+	        document.getElementById("throttled").textContent = data.throttled_status.issues_now.join(",<br>");
+        }
+        if (data.obstacle) {
+	        document.getElementById("obstacleInFront").textContent = data.obstacle.obstacleInFront;
+	        document.getElementById("sensorValueFront").textContent = data.obstacle.sensorValueFront;
+	        document.getElementById("obstacleInBack").textContent = data.obstacle.obstacleInBack;
+	        document.getElementById("sensorValueBack").textContent = data.obstacle.sensorValueBack;
         }
 
     } catch (e) {
@@ -91,7 +92,32 @@ function sendWithSpeed(g, s) {
   steer = s;
   ws.send(JSON.stringify({ gas, steer }));
 }
+let camAngle = 90;   // стартовое положение
+const CAM_MIN = 25;
+const CAM_MAX = 95;
 
+function moveCamera(step) {
+  camAngle += step;
+
+  if (camAngle < CAM_MIN) camAngle = CAM_MIN;
+  if (camAngle > CAM_MAX) camAngle = CAM_MAX;
+
+  document.getElementById("camAngle").textContent = camAngle;
+
+  ws.send(JSON.stringify({
+    camera_angle: camAngle
+  }));
+}
+// клавиатура
+document.addEventListener("keydown", e => {
+  if (e.repeat) return;
+  if (e.key === "ArrowUp" || e.key === "+") {
+    moveCamera(1);
+  }
+  if (e.key === "ArrowDown" || e.key === "-") {
+    moveCamera(-1);
+  }
+});
 // WSAD
 document.addEventListener("keydown", e => {
   if (e.repeat) return;
@@ -107,6 +133,20 @@ document.addEventListener("keyup", e => {
   if (["a","d"].includes(e.key)) steer = 0;
   sendWithSpeed(gas, steer);
 });
+
+let lightOn = false;
+
+function toggleLight() {
+  lightOn = !lightOn;
+
+  document.getElementById("lightStatus").textContent = lightOn ? "ON" : "OFF";
+  document.getElementById("lightStatus").style.color = lightOn ? "#4CAF50" : "#F44336";
+  document.getElementById("lightBtn").textContent = lightOn ? "ВЫКЛ" : "ВКЛ";
+
+  ws.send(JSON.stringify({
+    light: lightOn ? 1 : 0
+  }));
+}
 
 // init
 updateSpeedDisplay();
