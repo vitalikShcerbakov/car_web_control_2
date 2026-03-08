@@ -1,3 +1,10 @@
+#include <Servo.h>
+Servo myservo;
+int pos = 0;
+
+// Подключение фонаря
+int lightPin = 2; 
+
 // ================= 4WD Arduino + L293D Motor Shield =================
 
 // PWM пины для скорости моторов
@@ -49,15 +56,20 @@ float voltageBATT2 = 0;
 float voltageUPS = 0;
 
 unsigned long lastBatteryRead = 0;
-const unsigned long batteryInterval = 1000;
-
+const unsigned long batteryInterval = 200;
 
 String input = "";
 byte latch_state = 0;
 
+int command = "";
+
+int angleCam = 90;
+bool newCamCommand = false;
+
 void setup() {
   Serial.begin(115200);
-
+  pinMode(lightPin, OUTPUT);
+  myservo.attach(10);
   pinMode(MOTORLATCH, OUTPUT);
   pinMode(MOTORDATA, OUTPUT);
   pinMode(MOTORCLK, OUTPUT);
@@ -73,6 +85,7 @@ void setup() {
 }
 
 void loop() {
+
   // --- Чтение команд с Raspberry ---
   while (Serial.available()) {
     char c = Serial.read();
@@ -83,7 +96,11 @@ void loop() {
       input += c;
     }
   }
-
+  // управление камерой
+  if (newCamCommand) {
+    setServoAngle(angleCam);
+    newCamCommand = false;
+  }
   // --- Таймер батареи ---
   unsigned long now = millis();
 
@@ -91,13 +108,25 @@ void loop() {
     lastBatteryRead = now;
 
     readAllBatteries();
-    sendBatteryJson();
+    sendToSerialPortJson();
   }
 }
 
 // ================= Обработка команд =================
 void parseCommand(String cmd) {
   //Serial.print("Received: "); Serial.println(cmd);
+
+  // Управление фонариком
+  if (cmd.startsWith("light:")) {
+    command = cmd.substring(7, cmd.indexOf(';')).toInt();
+    controlLight(command);
+  }  
+
+  // Управление камерой
+  if (cmd.startsWith("CC:")) {
+    angleCam = cmd.substring(3, cmd.indexOf(';')).toInt();
+    newCamCommand = true;
+  }
 
   int gIndex = cmd.indexOf("G:");
   int rIndex = cmd.indexOf("R:");
@@ -107,12 +136,25 @@ void parseCommand(String cmd) {
   int gVal = cmd.substring(gIndex + 2, cmd.indexOf(';')).toInt();
   int rVal = cmd.substring(rIndex + 2).toInt();
 
-  //Serial.print("G: "); Serial.print(gVal);
-  //Serial.print(" R: "); Serial.println(rVal);
-
   drive(gVal, rVal);
 }
 
+// ================= Управление светом ================
+void controlLight(int state){
+  digitalWrite(lightPin, state);
+}
+// ================= Упралвение камерй (servo) ========
+void setServoAngle(int angle) {
+  // ограничиваем диапазон
+  if (angle < 25) {
+    angle = 25;
+  }
+  if (angle > 95) {
+    angle = 95;
+  }
+
+  myservo.write(angle);
+}
 // ================= Логика движения =================
 void drive(int G, int R) {
   float kLeft  = 1.00;
@@ -199,5 +241,32 @@ void sendBatteryJson() {
   Serial.print(voltageBATT2, 2);
   Serial.print(",\"ups\":");
   Serial.print(voltageUPS, 2);
+  Serial.println("}");
+}
+
+void sendToSerialPortJson() {
+  Serial.print("{");
+
+ /* Serial.print("\"obstacle\":{");
+  Serial.print("\"obstacleInFront\":");
+  Serial.print(obstacleInFront ? "true" : "false");
+  Serial.print(",\"obstacleInBack\":");
+  Serial.print(obstacleInBack ? "true" : "false");
+  Serial.print(",\"sensorValueFront\":");
+  Serial.print(sensorValueFront);
+  Serial.print(",\"sensorValueBack\":");
+  Serial.print(sensorValueBack);
+  Serial.print("}");
+*/
+  // вложенный объект battery
+  Serial.print("\"battery\":{");
+  Serial.print("\"bat1\":");
+  Serial.print(voltageBATT, 2);
+  Serial.print(",\"bat2\":");
+  Serial.print(voltageBATT2, 2);
+  Serial.print(",\"ups\":");
+  Serial.print(voltageUPS, 2);
+  Serial.print("}");
+
   Serial.println("}");
 }

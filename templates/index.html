@@ -19,7 +19,25 @@
     <h3>⚡ Скорость</h3>
     <input type="range" id="speedSlider" min="0" max="255" value="150" step="5">
     <span class="speed-value" id="speedValue">150</span>
+      <h3>Препятствие:</h3>
+      <div>Перед: <span id="obstacleInFront">--</span></div>
+      <div>Знач: <span id="sensorValueFront">--</span></div>
+      <div>Зад: <span id="obstacleInBack">--</span></div>
+      <div>Знач: <span id="sensorValueBack">--</span></div>
+
+    <div class="card light-card">
+  <h3>🔦 Фонарик</h3>
+
+  <button id="lightBtn" onclick="toggleLight()">
+    ВКЛ
+  </button>
+
+  <div class="light-status">
+    Статус: <span id="lightStatus">OFF</span>
   </div>
+</div>
+  </div>
+
 
   <!-- Камера -->
   <div class="card camera-card">
@@ -29,19 +47,27 @@
 
   <!-- Статус -->
   <div class="card status-card">
-    <h3>🔋 Батареи</h3>
-    <div>BAT1 <span id="bat1">--</span></div>
-    <div>BAT2 <span id="bat2">--</span></div>
-    <div>UPS  <span id="ups">--</span></div>
+    <h3> 🔋 Батареи Raspberry</h3>
+    <div> напряжение <span id="batRaspberryBus_V">--</span></div>
+    <div> текущий ток <span id="batRaspberryCurrent_mA">--</span></div>
+    <div> мощность <span id="batRaspberryPower_mW">--</span></div>
+    <div> overflow <span id="batRaspberryOverflow">--</span></div>
 
-    <h3>🌡️ Raspberry</h3>
+
+    <h3> 🔋 Батареи Двигатели</h3>
+    <div> напряжение <span id="batDriveBus_V">--</span></div>
+    <div> текущий ток <span id="batDriveCurrent_mA">--</span></div>
+    <div> мощность <span id="batDrivePower_mW">--</span></div>
+    <div> overflow <span id="batDriveOverflow">--</span></div>
+
+
+
+    <h3>️Raspberry</h3>
     <div>Temp <span id="cpuTemp">--</span></div>
     <div>CPU  <span id="cpuLoad">--</span></div>
     <div>RAM  <span id="ramLoad">--</span></div>
     <div>Disk <span id="diskLoad">--</span></div>
     <div>Throttled status:<span id="throttled">--</span></div>
-
-
   </div>
 
   <!-- Управление -->
@@ -59,8 +85,19 @@
       <button onclick="sendWithSpeed(-150, 0)">↓</button>
       <div></div>
     </div>
-  </div>
+      <!-- управление камерой -->
+    <div class="card camera-control-card">
+      <h3>🎥 Управление камерой</h3>
 
+      <div class="cam-buttons">
+        <button onclick="moveCamera(1)">▲</button>
+        <button onclick="moveCamera(-1)">▼</button>
+      </div>
+      <div class="cam-angle">
+        Угол: <span id="camAngle">90</span>
+      </div>
+    </div>
+</div>
 </div>
 
 <script src="static/app.js"></script>
