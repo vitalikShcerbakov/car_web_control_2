@@ -26,6 +26,7 @@ class ArduinoSerial:
         arduino_vids = (0x2341, 0x2A03, 0x1A86, 0x0403)
         for port in list_ports.comports():
             if port.vid in arduino_vids:
+                print(f"find arduino port: {port.device} ")
                 return port.device
         return None
 

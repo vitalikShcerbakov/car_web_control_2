@@ -14,10 +14,23 @@ ws.onerror = () => wsStatus.textContent = "🔴 ERROR";
 ws.onmessage = (event) => {
     try {
         const data = JSON.parse(event.data);
+        console.log("batDrive: ", data.battery.drive.bus_V)
+        console.log("batRaspberry: ", data.battery.raspberry.bus_V)
+//        toString()
         if (data.battery) {
-            updateBattery("bat1", data.battery.bat1);
-            updateBattery("bat2", data.battery.bat2);
-            updateBattery("ups", data.battery.ups);
+            updateBattery("batDriveBus_V", data.battery.drive.bus_V, "V");
+            updateBattery("batRaspberryBus_V", data.battery.raspberry.bus_V, "V");
+
+            updateBattery("batRaspberryCurrent_mA", data.battery.raspberry.current_mA, "mA");
+            updateBattery("batDriveCurrent_mA", data.battery.drive.current_mA, "mA");
+
+            updateBattery("batDrivePower_mW", data.battery.drive.power_mW, "mW");
+            updateBattery("batRaspberryPower_mW", data.battery.raspberry.power_mW, "mW");
+
+            updateBattery("batDriveOverflow", data.battery.drive.overflow);
+            updateBattery("batRaspberryOverflow", data.battery.raspberry.overflow);
+
+
         }
         if (data.raspi_temp !== undefined) {
             updateTemp(data.raspi_temp);
@@ -43,9 +56,9 @@ ws.onmessage = (event) => {
 };
 
 // цвет батареи
-function updateBattery(id, value) {
+function updateBattery(id, value, units_measurement="") {
     const el = document.getElementById(id);
-    el.textContent = value.toFixed(2) + " V";
+    el.textContent = value.toFixed(2) + " " + units_measurement;
 
     if (value > 4) el.style.color = "#4CAF50";
     else if (value > 3) el.style.color = "#FFC107";
