@@ -19,11 +19,21 @@
     <h3>⚡ Скорость</h3>
     <input type="range" id="speedSlider" min="0" max="255" value="150" step="5">
     <span class="speed-value" id="speedValue">150</span>
-      <h3>Препятствие:</h3>
-      <div>Перед: <span id="obstacleInFront">--</span></div>
-      <div>Знач: <span id="sensorValueFront">--</span></div>
-      <div>Зад: <span id="obstacleInBack">--</span></div>
-      <div>Знач: <span id="sensorValueBack">--</span></div>
+<!--      <h3>Препятствие:</h3>-->
+<!--      <div>Перед: <span id="obstacleInFront">&#45;&#45;</span></div>-->
+<!--      <div>Знач: <span id="sensorValueFront">&#45;&#45;</span></div>-->
+<!--      <div>Зад: <span id="obstacleInBack">&#45;&#45;</span></div>-->
+<!--      <div>Знач: <span id="sensorValueBack">&#45;&#45;</span></div>-->
+
+        <div class="debug-panel">
+      <h3>📡 JSON данные</h3>
+<!--      <div class="debug-controls">-->
+<!--        <button onclick="toggleJsonView()" id="toggleJsonBtn">Свернуть</button>-->
+<!--        <button onclick="copyJsonToClipboard()">Копировать</button>-->
+<!--        <button onclick="clearJsonDisplay()">Очистить</button>-->
+<!--      </div>-->
+      <pre id="jsonDisplay" class="json-display">-- ожидание данных --</pre>
+    </div>
 
     <div class="card light-card">
   <h3>🔦 Фонарик</h3>

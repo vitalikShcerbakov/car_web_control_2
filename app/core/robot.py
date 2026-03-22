@@ -18,9 +18,35 @@ class RobotController:
         self.filter = MovingAverageFilter()
 
     def update_telemetry(self, data):
-        self.telemetry.encoder_left = data.get('enc_left', 0)
-        self.telemetry.encoder_right = data.get('enc_right', 0)
-        self.telemetry.timestamp = asyncio.get_event_loop().time()
+        # self.telemetry.encoder_left = data.get('enc_left', 0)
+        # self.telemetry.encoder_right = data.get('enc_right', 0)
+        try:
+            if data is None:
+                return None
+            battery_drive = data.get("battery", {}).get("drive")
+            sensor_data = data.get("telemetry", {})
+            encoders = data.get("encoders")
+            ir_sensors = sensor_data.get("IRSensor")
+            ultrasonic_sensor = sensor_data.get("ultrasonicSensor")
+            if ir_sensors is not None:
+                self.telemetry.ir1 = ir_sensors.get("ir1")
+                self.telemetry.ir2 = ir_sensors.get("ir2")
+                self.telemetry.ir3 = ir_sensors.get("ir3")
+                self.telemetry.ir4 = ir_sensors.get("ir4")
+            if encoders is not None:
+                self.telemetry.enc1 = encoders.get("enc1")
+                self.telemetry.enc2 = encoders.get("enc2")
+                self.telemetry.enc3 = encoders.get("enc3")
+                self.telemetry.enc4 = encoders.get("enc4")
+            if ultrasonic_sensor is not None:
+                self.telemetry.ul1 = ultrasonic_sensor.get("distance")
+            if battery_drive is not None:
+                self.telemetry.bus_V = battery_drive.get("bus_V")
+                self.telemetry.current_mA = battery_drive.get("current_mA")
+                self.telemetry.power_mW = battery_drive.get("power_mW")
+                self.telemetry.timestamp = asyncio.get_event_loop().time()
+        except Exception as e:
+            print('error: ', e)
 
     def compute_motor_control(self):
         """ Вычислить управление двигателем"""

@@ -22,9 +22,9 @@ class ArduinoProtocol(asyncio.Protocol):
 
     def data_received(self, data):
         self.buffer += data.decode()
-        print("data_received: ", self.buffer)
         while '\n' in self.buffer:
             line, self.buffer = self.buffer.split('\n', 1)
+            # print(line)
             try:
                 self.controller.update_telemetry(json.loads(line))
             except:

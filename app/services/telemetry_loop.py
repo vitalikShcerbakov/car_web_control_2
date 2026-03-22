@@ -4,8 +4,10 @@ from dataclasses import asdict
 async def telemetry_loop(robot, manager):
     while True:
         await manager.broadcast({
-            "type": "telemetry",
-            "data": asdict(robot.telemetry)
+            # "type": "telemetry",
+            # "data": asdict(robot.telemetry)
+            "battery": {"drive": asdict(robot.telemetry)}
+            # "data": {"battery": {"drive": asdict(robot.telemetry)}}
         })
 
         await asyncio.sleep(0.05)

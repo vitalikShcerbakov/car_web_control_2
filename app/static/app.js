@@ -14,22 +14,22 @@ ws.onerror = () => wsStatus.textContent = "🔴 ERROR";
 ws.onmessage = (event) => {
     try {
         const data = JSON.parse(event.data);
-        console.log("data: ", data)
-        console.log("batDrive: ", data.battery.drive.bus_V)
-        console.log("batRaspberry: ", data.battery.raspberry.bus_V)
+//        console.log("batDrive: ", data.battery.drive.bus_V)
+//        console.log("batRaspberry: ", data.battery.raspberry.bus_V)
 //        toString()
+        displayJsonOnPage(data);
         if (data.battery) {
             updateBattery("batDriveBus_V", data.battery.drive.bus_V, "V");
-            updateBattery("batRaspberryBus_V", data.battery.raspberry.bus_V, "V");
+//            updateBattery("batRaspberryBus_V", data.battery.raspberry.bus_V, "V");
 
-            updateBattery("batRaspberryCurrent_mA", data.battery.raspberry.current_mA, "mA");
-            updateBattery("batDriveCurrent_mA", data.battery.drive.current_mA, "mA");
+//            updateBattery("batRaspberryCurrent_mA", data.battery.raspberry.current_mA, "mA");
+//            updateBattery("batDriveCurrent_mA", data.battery.drive.current_mA, "mA");
 
-            updateBattery("batDrivePower_mW", data.battery.drive.power_mW, "mW");
-            updateBattery("batRaspberryPower_mW", data.battery.raspberry.power_mW, "mW");
+//            updateBattery("batDrivePower_mW", data.battery.drive.power_mW, "mW");
+//            updateBattery("batRaspberryPower_mW", data.battery.raspberry.power_mW, "mW");
 
-            updateBattery("batDriveOverflow", data.battery.drive.overflow);
-            updateBattery("batRaspberryOverflow", data.battery.raspberry.overflow);
+//            updateBattery("batDriveOverflow", data.battery.drive.overflow);
+//            updateBattery("batRaspberryOverflow", data.battery.raspberry.overflow);
 
 
         }
@@ -160,6 +160,62 @@ function toggleLight() {
   ws.send(JSON.stringify({
     light: lightOn ? 1 : 0
   }));
+}
+
+function syntaxHighlight(json) {
+    if (typeof json !== 'string') {
+        json = JSON.stringify(json, null, 2);
+    }
+
+    json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+    return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function(match) {
+        let cls = 'json-number';
+        if (/^"/.test(match)) {
+            if (/:$/.test(match)) {
+                cls = 'json-key';
+                match = match.replace(/"/g, '');
+                return '<span class="' + cls + '">' + match + '</span>';
+            } else {
+                cls = 'json-string';
+            }
+        } else if (/true|false/.test(match)) {
+            cls = 'json-boolean';
+        } else if (/null/.test(match)) {
+            cls = 'json-null';
+        }
+        return '<span class="' + cls + '">' + match + '</span>';
+    });
+}
+
+// Функция отображения JSON на странице
+function displayJsonOnPage(data) {
+    const jsonDisplay = document.getElementById("jsonDisplay");
+    if (jsonDisplay) {
+        lastJsonData = data;
+
+        // Добавляем временную метку
+        const timestamp = new Date().toLocaleTimeString();
+        const jsonWithTime = {
+            timestamp: timestamp,
+            ...data
+        };
+
+        // Форматируем JSON с отступами
+        const formattedJson = JSON.stringify(jsonWithTime, null, 2);
+
+//        if (jsonCollapsed) {
+//            // В свернутом виде показываем только первые 2 строки
+//            const lines = formattedJson.split('\n');
+//            const preview = lines.slice(0, 3).join('\n') + '\n...';
+//            jsonDisplay.innerHTML = syntaxHighlight(preview);
+//        } else {
+//            jsonDisplay.innerHTML = syntaxHighlight(formattedJson);
+//        }
+        jsonDisplay.innerHTML = syntaxHighlight(formattedJson);
+        // Автоскролл вниз
+        jsonDisplay.scrollTop = jsonDisplay.scrollHeight;
+    }
 }
 
 // init
