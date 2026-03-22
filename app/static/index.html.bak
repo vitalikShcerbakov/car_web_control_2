@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Car Control</title>
+<style>
+body {
+  font-family: sans-serif;
+  background: #111;
+  color: #fff;
+  text-align: center;
+}
+
+button {
+  width: 100px;
+  height: 60px;
+  margin: 10px;
+  font-size: 18px;
+}
+</style>
+</head>
+<body>
+
+<h2>📷 Камера</h2>
+<img src="/video" width="320" height="240">
+
+
+<div>
+  <button onclick="send(150, 0)">↑</button>
+</div>
+<div>
+  <button onclick="send(0, -150)">←</button>
+  <button onclick="send(0, 0)">■</button>
+  <button onclick="send(0, 150)">→</button>
+</div>
+<div>
+  <button onclick="send(-150, 0)">↓</button>
+</div>
+
+<script>
+const ws = new WebSocket(`ws://${location.host}/ws`);
+
+let gas = 0;
+let steer = 0;
+
+function send(g, s) {
+  gas = g;
+  steer = s;
+  ws.send(JSON.stringify({ gas, steer }));
+}
+
+// WSAD
+document.addEventListener("keydown", e => {
+  if (e.repeat) return;
+
+  if (e.key === "w") send(150, steer);
+  if (e.key === "s") send(-150, steer);
+  if (e.key === "a") send(gas, -150);
+  if (e.key === "d") send(gas, 150);
+});
+
+document.addEventListener("keyup", e => {
+  if (["w","s"].includes(e.key)) gas = 0;
+  if (["a","d"].includes(e.key)) steer = 0;
+  send(gas, steer);
+});
+</script>
+
+</body>
+</html>
