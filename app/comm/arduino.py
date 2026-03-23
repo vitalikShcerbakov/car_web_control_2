@@ -1,6 +1,6 @@
 import asyncio
 import json
-from app.models.commands import LastMotorCommand
+from app.models.commands import MotionCommand
 
 class ArduinoProtocol(asyncio.Protocol):
     def __init__(self, controller):
@@ -8,7 +8,7 @@ class ArduinoProtocol(asyncio.Protocol):
         self.buffer = ""
         self.transport = None
         self.queue = asyncio.Queue()
-        self.last_command = LastMotorCommand()
+        self.last_command = MotionCommand()
 
     def connection_made(self, transport):
         self.transport = transport
@@ -31,8 +31,7 @@ class ArduinoProtocol(asyncio.Protocol):
                 pass
 
     async def send_command(self, control):
-        cmd = f"G:{control.GAS};R:{control.STEER}\n"
-        if self.last_command.R != control.STEER or self.last_command.G != control.GAS:
+        cmd = f"M1:{control.M1};M2:{control.M2};M3:{control.M3};M4:{control.M4}\n"
+        if self.last_command != control:
             await self.queue.put(cmd)
-            self.last_command.G = control.GAS
-            self.last_command.R = control.STEER
+            self.last_command = control

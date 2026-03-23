@@ -61,9 +61,13 @@ class RobotController:
         )
 
     def gas_steer_to_motor(self, gas, steer):
-        # left = max(-255, min(255, gas + steer))
-        # right = max(-255, min(255, gas - steer))
-        return MotorControl(gas, steer)
+        m1, m2, m3, m4 = 0, 0, 0, 0
+        if steer == 0:
+            m1, m2, m3, m4 = [gas] * 4
+        else:
+            m1, m2 = [steer] * 2
+            m3, m4 = [-steer] * 2
+        return MotionCommand(m1, m2, m3, m4)
 
     def get_speed(self):
         return self.filter.update(self.telemetry.encoder_left)
