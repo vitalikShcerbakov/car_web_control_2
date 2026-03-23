@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Car Control</title>
+<link rel="stylesheet" href="static/style.css">
+</head>
+
+<body>
+
+<div class="top-bar">
+  <div class="ws-status" id="wsStatus">🔴 OFFLINE</div>
+</div>
+
+<div class="dashboard">
+
+  <!-- Скорость -->
+  <div class="card speed-card">
+    <h3>⚡ Скорость</h3>
+    <input type="range" id="speedSlider" min="0" max="255" value="150" step="5">
+    <span class="speed-value" id="speedValue">150</span>
+<!--      <h3>Препятствие:</h3>-->
+<!--      <div>Перед: <span id="obstacleInFront">&#45;&#45;</span></div>-->
+<!--      <div>Знач: <span id="sensorValueFront">&#45;&#45;</span></div>-->
+<!--      <div>Зад: <span id="obstacleInBack">&#45;&#45;</span></div>-->
+<!--      <div>Знач: <span id="sensorValueBack">&#45;&#45;</span></div>-->
+
+        <div class="debug-panel">
+      <h3>📡 JSON данные</h3>
+<!--      <div class="debug-controls">-->
+<!--        <button onclick="toggleJsonView()" id="toggleJsonBtn">Свернуть</button>-->
+<!--        <button onclick="copyJsonToClipboard()">Копировать</button>-->
+<!--        <button onclick="clearJsonDisplay()">Очистить</button>-->
+<!--      </div>-->
+      <pre id="jsonDisplay" class="json-display">-- ожидание данных --</pre>
+    </div>
+
+    <div class="card light-card">
+  <h3>🔦 Фонарик</h3>
+
+  <button id="lightBtn" onclick="toggleLight()">
+    ВКЛ
+  </button>
+
+  <div class="light-status">
+    Статус: <span id="lightStatus">OFF</span>
+  </div>
+</div>
+  </div>
+
+
+  <!-- Камера -->
+  <div class="card camera-card">
+    <h2>📷 Камера</h2>
+    <img src="/video">
+  </div>
+
+  <!-- Статус -->
+  <div class="card status-card">
+    <h3> 🔋 Батареи Raspberry</h3>
+    <div> напряжение <span id="batRaspberryBus_V">--</span></div>
+    <div> текущий ток <span id="batRaspberryCurrent_mA">--</span></div>
+    <div> мощность <span id="batRaspberryPower_mW">--</span></div>
+    <div> overflow <span id="batRaspberryOverflow">--</span></div>
+
+
+    <h3> 🔋 Батареи Двигатели</h3>
+    <div> напряжение <span id="batDriveBus_V">--</span></div>
+    <div> текущий ток <span id="batDriveCurrent_mA">--</span></div>
+    <div> мощность <span id="batDrivePower_mW">--</span></div>
+    <div> overflow <span id="batDriveOverflow">--</span></div>
+
+
+
+    <h3>️Raspberry</h3>
+    <div>Temp <span id="cpuTemp">--</span></div>
+    <div>CPU  <span id="cpuLoad">--</span></div>
+    <div>RAM  <span id="ramLoad">--</span></div>
+    <div>Disk <span id="diskLoad">--</span></div>
+    <div>Throttled status:<span id="throttled">--</span></div>
+  </div>
+
+  <!-- Управление -->
+  <div class="controls">
+    <div class="controls-grid">
+      <div></div>
+      <button onclick="sendWithSpeed(150, 0)">↑</button>
+      <div></div>
+
+      <button onclick="sendWithSpeed(0, -150)">←</button>
+      <button onclick="sendWithSpeed(0, 0)">■</button>
+      <button onclick="sendWithSpeed(0, 150)">→</button>
+
+      <div></div>
+      <button onclick="sendWithSpeed(-150, 0)">↓</button>
+      <div></div>
+    </div>
+      <!-- управление камерой -->
+    <div class="card camera-control-card">
+      <h3>🎥 Управление камерой</h3>
+
+      <div class="cam-buttons">
+        <button onclick="moveCamera(1)">▲</button>
+        <button onclick="moveCamera(-1)">▼</button>
+      </div>
+      <div class="cam-angle">
+        Угол: <span id="camAngle">90</span>
+      </div>
+    </div>
+</div>
+</div>
+
+<script src="static/app.js"></script>
+</body>
+</html>
+
