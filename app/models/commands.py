@@ -21,3 +21,7 @@ class MotionCommand:
 class LastMotorCommand:
     G: int = 0
     R: int = 0
+
+@dataclass
+class Command:
+    drive_battery: int = 0

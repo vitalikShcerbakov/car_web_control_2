@@ -1,8 +1,9 @@
 import asyncio
+import time
 from dataclasses import asdict
 
 from app.models.telemetry import TelemetryData
-from app.models.commands import MotionCommand, MotorControl
+from app.models.commands import MotionCommand, MotorControl, Command
 from app.core.pid import PIDController
 from app.core.filters import MovingAverageFilter
 
@@ -11,6 +12,7 @@ class RobotController:
         self.telemetry = TelemetryData()
         self.motion_command = MotionCommand()
         self.manual_control = MotionCommand()
+        self.command = Command()
 
         self.speed_pid = PIDController(1.2, 0.05, 0.1)
         self.angle_pid = PIDController(2.0, 0.01, 0.2)
@@ -46,7 +48,8 @@ class RobotController:
                 self.telemetry.power_mW = battery_drive.get("power_mW")
                 self.telemetry.timestamp = asyncio.get_event_loop().time()
         except Exception as e:
-            print('error: ', e)
+            print('error: ', e, 'data: ', data)
+            # time.sleep(2)
 
     def compute_motor_control(self):
         """ Вычислить управление двигателем"""
@@ -71,3 +74,6 @@ class RobotController:
 
     def get_speed(self):
         return self.filter.update(self.telemetry.encoder_left)
+
+    def write_commands(self, value):
+        self.command.drive_battery = value

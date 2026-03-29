@@ -35,6 +35,9 @@ def router(manager, robot):
                 data = await ws.receive_json()
                 gas = data.get("gas", 0)
                 steer = data.get("steer", 0)
+                contrlol_driverBat = data.get("light")
+                if contrlol_driverBat in (0, 1):
+                    robot.write_commands(contrlol_driverBat)
                 robot.manual_control = robot.gas_steer_to_motor(gas, steer)
                 # robot.motion_command.target_speed = data.get("speed", 0)
         except:

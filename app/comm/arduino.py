@@ -1,6 +1,8 @@
 import asyncio
 import json
-from app.models.commands import MotionCommand
+from distutils import command
+
+from app.models.commands import MotionCommand, Command
 
 class ArduinoProtocol(asyncio.Protocol):
     def __init__(self, controller):
@@ -9,6 +11,7 @@ class ArduinoProtocol(asyncio.Protocol):
         self.transport = None
         self.queue = asyncio.Queue()
         self.last_command = MotionCommand()
+        self.last_driver = None
 
     def connection_made(self, transport):
         self.transport = transport
@@ -31,7 +34,19 @@ class ArduinoProtocol(asyncio.Protocol):
                 pass
 
     async def send_command(self, control):
-        cmd = f"M1:{control.M1};M2:{control.M2};M3:{control.M3};M4:{control.M4}\n"
-        if self.last_command != control:
-            await self.queue.put(cmd)
-            self.last_command = control
+        # ToDo сейчас отправка толкьо по двигателяем, сделать универсальную под все команды!!!
+        try:
+            if isinstance(control, MotionCommand):
+                cmd = f"M1:{control.M1};M2:{control.M2};M3:{control.M3};M4:{control.M4}\n"
+                if self.last_command != control:
+                    await self.queue.put(cmd)
+                    self.last_command = control
+            elif isinstance(control, Command):
+                cmd = f"driverBat:{control.drive_battery}\n"
+                if self.last_driver != cmd:
+                    await self.queue.put(cmd)
+                    self.last_driver = cmd
+        except Exception:
+            pass
+
+
