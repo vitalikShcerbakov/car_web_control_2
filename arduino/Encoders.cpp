@@ -53,5 +53,5 @@ void encoders_to_json() {
     
     serializeJson(doc, Serial);
     Serial.println();
-    Serial.print("\n"); // для python конец json
+    // Serial.print("\n"); // для python конец json
 }

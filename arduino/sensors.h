@@ -174,7 +174,6 @@ void sensors_to_json() {
     
     serializeJson(doc, Serial);
     Serial.println();
-    Serial.print("\n"); // для python конец json
 }
 
 #endif

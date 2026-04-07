@@ -31,16 +31,20 @@ const unsigned long BatteryInterval = 1000;    // Отправляем инфу 
 #define DRIVE_CALIBRATION 0.949      // Батарея моторов 12.6V -> 13.28V показание
 #define RASPBERRY_CALIBRATION 0.986  // Raspberry 5.12V -> 5.19V показание
 
-int targetG = 0;
-int targetR = 0;
 int targetM1 = 0;
 int targetM2 = 0;
 int targetM3 = 0;
 int targetM4 = 0;
-#define BUFFER_SIZE 32
+
+int driveBatPin = 53;
+int telemetryBatPin = 51;
+
+int commandDriveBat = 0;
+int commandTelemetryBat = 1;
+
+#define BUFFER_SIZE 64  // 128
 char inputBuffer[BUFFER_SIZE];
 uint8_t bufIndex = 0;
-
 
 struct INAData {
   float busVoltage_V;
@@ -59,6 +63,9 @@ void setup() {
   pinMode(24, INPUT_PULLUP);
   pinMode(25, INPUT_PULLUP);
 
+  pinMode(driveBatPin, OUTPUT);
+  pinMode(telemetryBatPin, OUTPUT);
+
   motors_init();
 
   sensors_init();
@@ -68,7 +75,7 @@ void setup() {
     while (1); // Бесконечный цикл - индикация фатальной ошибки
   }
   Serial.println("Motor Shield found.");
-  AFMS.begin(); // запуск PCA9685
+  // AFMS.begin(); // запуск PCA9685
   Serial.println("end setup....");
  
 }
@@ -100,12 +107,6 @@ while (Serial.available()) {
         // Отправляем данные
         sendBatteryData(batDrive, batRaspberry);
     }
-    updateEncoders();
-
-    // sensors_read_all();
-    // ultrasonic_update();
-    // Serial.println(sensors_to_string());
-      // вывод (не в ISR!)
 
   static unsigned long t = 0;
   if (millis() - t > 200) {
@@ -116,6 +117,10 @@ while (Serial.available()) {
   drive();
     // ======= Обновляем датчики =======
   sensors_update();
+  updateEncoders();
+  // ========== Вкючение реле ========
+  controlDriverBat(commandDriveBat);
+  controlTelemetryBat(commandTelemetryBat);
 }
 
 void sendBatteryData(INAData &drive, INAData &rasp) {
@@ -135,9 +140,7 @@ void sendBatteryData(INAData &drive, INAData &rasp) {
     doc["overflow"] = drive.overflow || rasp.overflow;
     
     serializeJson(doc, Serial);
-    Serial.println();
-    Serial.print("\n"); // для python конец json
-    
+    Serial.println();    
 }
 
 void motors_init() {
@@ -169,6 +172,21 @@ void parseCommand(char* cmd) {
     targetM2 = constrain(M2, -255, 255);
     targetM3 = constrain(M3, -255, 255);
     targetM4 = constrain(M4, -255, 255);
+
+    ptr = strstr(cmd, "driverBat:");
+    if (ptr) commandDriveBat = atoi(ptr+10);
+
+    ptr = strstr(cmd, "telemetryBat:");
+    if (ptr) commandTelemetryBat = atoi(ptr+13);
+}
+
+// ================= Управление акб двигателей ================
+void controlDriverBat(int state){
+  digitalWrite(driveBatPin, state);
+}
+
+void controlTelemetryBat(int state){
+  digitalWrite(telemetryBatPin, state);
 }
 
 INAData readVoltage(INA226_WE &ina, float calibrationFactor) {
