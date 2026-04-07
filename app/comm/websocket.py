@@ -26,6 +26,10 @@ class ConnectionManager:
 
 def router(manager, robot):
     router = APIRouter()
+    key_command = {
+        'light': 'drive_battery',
+        'telemetry': 'telemetry_bat'
+    }
 
     @router.websocket("/ws")
     async def ws(ws: WebSocket):
@@ -35,13 +39,14 @@ def router(manager, robot):
                 data = await ws.receive_json()
                 gas = data.get("gas", 0)
                 steer = data.get("steer", 0)
-                contrlol_driverBat = data.get("light")
-                contrlol_telemetryBat = data.get("telemetry")
-                if contrlol_driverBat in (0, 1) and contrlol_telemetryBat in (0, 1):
-                    robot.write_commands(contrlol_driverBat, contrlol_telemetryBat)
                 robot.manual_control = robot.gas_steer_to_motor(gas, steer)
-                # robot.motion_command.target_speed = data.get("speed", 0)
-        except:
+                for key, value in data.items():
+                    if key_command.get(key, '') in robot.command.__dict__:
+                        robot.command.__setattr__(key_command.get(key, "empty"), value)
+                        # print('ws command: ', robot.command.__getattribute__(key_command.get(key, "empty")))
+
+        except Exception as e:
+            print('ws error: ', type(e), e)
             manager.disconnect(ws)
 
     return router

@@ -1,6 +1,8 @@
 import asyncio
 import json
 from distutils import command
+from time import sleep
+from typing import Union
 
 from app.models.commands import MotionCommand, Command
 
@@ -12,6 +14,7 @@ class ArduinoProtocol(asyncio.Protocol):
         self.queue = asyncio.Queue()
         self.last_command = Command()
         self.last_driver = MotionCommand()
+        self.last_state = {Command: None, MotionCommand: None}
 
     def connection_made(self, transport):
         self.transport = transport
@@ -21,6 +24,8 @@ class ArduinoProtocol(asyncio.Protocol):
         while True:
             cmd = await self.queue.get()
             if self.transport:
+                cmd = str(cmd)
+                print('cmd: ', cmd)
                 self.transport.write(cmd.encode())
 
     def data_received(self, data):
@@ -33,20 +38,17 @@ class ArduinoProtocol(asyncio.Protocol):
             except:
                 pass
 
-    async def send_command(self, control):
-        # ToDo сейчас отправка толкьо по двигателяем, сделать универсальную под все команды!!!
+    async def send_command(self, control: Union[Command, MotionCommand]):
         try:
-            if isinstance(control, MotionCommand):
-                cmd = f"M1:{control.M1};M2:{control.M2};M3:{control.M3};M4:{control.M4}\n"
-                if self.last_driver != control:
-                    await self.queue.put(cmd)
-                    self.last_driver = control
-            elif isinstance(control, Command):
-                cmd = f"driverBat:{control.drive_battery};telemetryBat:{control.telemetry_bat}\n"
-                if self.last_command != control:
-                    await self.queue.put(cmd)
-                    self.last_command = control
-        except Exception:
+            # if isinstance(control, Command):
+                # print('c: ', control.__dict__)
+                # print('last state contrlol: ', self.last_state[type(control)], 'in: ', control)
+            if self.last_state[type(control)] != control:
+                print('control: ', control)
+                await self.queue.put(control)
+                self.last_state[type(control)] = str(control)
+        except Exception as e:
+            print('error: ', e)
             pass
 
 
