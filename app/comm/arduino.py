@@ -1,5 +1,6 @@
 import asyncio
 import json
+from copy import copy
 from distutils import command
 from time import sleep
 from typing import Union
@@ -40,13 +41,10 @@ class ArduinoProtocol(asyncio.Protocol):
 
     async def send_command(self, control: Union[Command, MotionCommand]):
         try:
-            # if isinstance(control, Command):
-                # print('c: ', control.__dict__)
-                # print('last state contrlol: ', self.last_state[type(control)], 'in: ', control)
             if self.last_state[type(control)] != control:
                 print('control: ', control)
                 await self.queue.put(control)
-                self.last_state[type(control)] = str(control)
+                self.last_state[type(control)] = copy(control)
         except Exception as e:
             print('error: ', e)
             pass

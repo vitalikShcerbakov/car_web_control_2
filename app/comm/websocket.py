@@ -43,6 +43,7 @@ def router(manager, robot):
                 for key, value in data.items():
                     if key_command.get(key, '') in robot.command.__dict__:
                         robot.command.__setattr__(key_command.get(key, "empty"), value)
+                        # robot.command = robot.get_command(key_command.get(key, ''))
                         # print('ws command: ', robot.command.__getattribute__(key_command.get(key, "empty")))
 
         except Exception as e:

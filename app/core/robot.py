@@ -74,3 +74,8 @@ class RobotController:
 
     def get_speed(self):
         return self.filter.update(self.telemetry.encoder_left)
+
+    def get_command(self, command):
+        print('command: ', command)
+        return Command(command)
+
