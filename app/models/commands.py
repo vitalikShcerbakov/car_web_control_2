@@ -17,11 +17,12 @@ class MotionCommand:
     # target_angle: float = 0
 
 
-@dataclass
-class LastMotorCommand:
-    G: int = 0
-    R: int = 0
+# @dataclass
+# class LastMotorCommand:
+#     G: int = 0
+#     R: int = 0
 
 @dataclass
 class Command:
     drive_battery: int = 0
+    telemetry_bat: int = 1

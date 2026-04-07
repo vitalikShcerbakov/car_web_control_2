@@ -75,5 +75,6 @@ class RobotController:
     def get_speed(self):
         return self.filter.update(self.telemetry.encoder_left)
 
-    def write_commands(self, value):
-        self.command.drive_battery = value
+    def write_commands(self, dirve_bat, telemetry_bat):
+        self.command.drive_battery = dirve_bat
+        self.command.telemetry_bat = telemetry_bat

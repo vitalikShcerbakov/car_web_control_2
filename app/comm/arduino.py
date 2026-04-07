@@ -10,8 +10,8 @@ class ArduinoProtocol(asyncio.Protocol):
         self.buffer = ""
         self.transport = None
         self.queue = asyncio.Queue()
-        self.last_command = MotionCommand()
-        self.last_driver = None
+        self.last_command = Command()
+        self.last_driver = MotionCommand()
 
     def connection_made(self, transport):
         self.transport = transport
@@ -38,14 +38,14 @@ class ArduinoProtocol(asyncio.Protocol):
         try:
             if isinstance(control, MotionCommand):
                 cmd = f"M1:{control.M1};M2:{control.M2};M3:{control.M3};M4:{control.M4}\n"
+                if self.last_driver != control:
+                    await self.queue.put(cmd)
+                    self.last_driver = control
+            elif isinstance(control, Command):
+                cmd = f"driverBat:{control.drive_battery};telemetryBat:{control.telemetry_bat}\n"
                 if self.last_command != control:
                     await self.queue.put(cmd)
                     self.last_command = control
-            elif isinstance(control, Command):
-                cmd = f"driverBat:{control.drive_battery}\n"
-                if self.last_driver != cmd:
-                    await self.queue.put(cmd)
-                    self.last_driver = cmd
         except Exception:
             pass
 
