@@ -1,11 +1,10 @@
 import asyncio
 import json
 from copy import copy
-from distutils import command
-from time import sleep
 from typing import Union
 
 from app.models.commands import MotionCommand, Command
+
 
 class ArduinoProtocol(asyncio.Protocol):
     def __init__(self, controller):
@@ -13,13 +12,11 @@ class ArduinoProtocol(asyncio.Protocol):
         self.buffer = ""
         self.transport = None
         self.queue = asyncio.Queue()
-        self.last_command = Command()
-        self.last_driver = MotionCommand()
         self.last_state = {Command: None, MotionCommand: None}
 
-    def connection_made(self, transport):
-        self.transport = transport
-        asyncio.create_task(self.writer())
+    # def connection_made(self, transport):
+    #     self.transport = transport
+    #     asyncio.create_task(self.writer())
 
     async def writer(self):
         while True:
