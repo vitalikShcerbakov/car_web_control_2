@@ -19,14 +19,6 @@ class MotionCommand:
     def __str__(self):
         return f"M1:{self.M1};M2:{self.M2};M3:{self.M3};M4:{self.M4}\n"
 
-    def __repr__(self):
-        return f"M1:{self.M1};M2:{self.M2};M3:{self.M3};M4:{self.M4}\n"
-
-
-# @dataclass
-# class LastMotorCommand:
-#     G: int = 0
-#     R: int = 0
 
 @dataclass
 class Command:
@@ -35,6 +27,3 @@ class Command:
 
     def __str__(self):
         return f"driverBat:{self.drive_battery};telemetryBat:{self.telemetry_bat}\n"
-    #
-    # def __repr__(self):
-    #     return f"driverBat:{self.drive_battery};telemetryBat:{self.telemetry_bat}\n"
