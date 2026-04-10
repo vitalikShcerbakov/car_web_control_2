@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 
 @dataclass
@@ -27,8 +27,8 @@ class Encoder:
 
 @dataclass
 class TelemetryData:
-    battery_raspberry: Battery = Battery()
-    battery_driver: Battery = Battery()
-    infrareds: Infrared = Infrared()
-    encoders: Encoder = Encoder()
+    battery_raspberry: Battery =field(default_factory=Battery)  
+    battery_driver: Battery = field(default_factory=Battery)
+    infrareds: Infrared = field(default_factory=Infrared)
+    encoders: Encoder = field(default_factory=Encoder)
     ul1: int = 0
