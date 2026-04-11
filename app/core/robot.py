@@ -21,6 +21,8 @@ class RobotController:
             if battery is not None:
                 battery_driver = battery.get("drive")
                 battery_raspberry = battery.get("raspberry")
+                self.telemetry.telemetry_voltage = battery.get("telemetryPower_V")
+
             sensor_data = data.get("telemetry", {})
             encoders = data.get("encoders")
             ir_sensors = sensor_data.get("IRSensor")
@@ -47,6 +49,7 @@ class RobotController:
                 self.telemetry.battery_raspberry.current_mA = battery_raspberry.get("current_mA")
                 self.telemetry.battery_raspberry.power_mW = battery_raspberry.get("power_mW")
                 self.telemetry.battery_raspberry.timestamp = asyncio.get_event_loop().time()
+
         except Exception as e:
             print('error: ', e, 'data: ', data)
 

@@ -3,6 +3,8 @@
 
 #include <Arduino.h>
 
+extern float telemetryPower;
+
 struct INAData {
   float busVoltage_V;
   float current_mA;
@@ -12,5 +14,6 @@ struct INAData {
 
 void battery_ina_begin();
 void battery_ina_tick(unsigned long now_ms);
+float readVoltage(byte pin, float R1, float R2);
 
 #endif

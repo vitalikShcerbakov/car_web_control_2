@@ -15,6 +15,7 @@ async def telemetry_loop(robot, manager):
                 "battery": {
                     "drive": asdict(tel.battery_driver),
                     "raspberry": asdict(tel.battery_raspberry),
+                    "telemetry_voltage": tel.telemetry_voltage,
                 },
             }
         )

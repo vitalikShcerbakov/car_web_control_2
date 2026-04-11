@@ -16,6 +16,12 @@ static INA226_WE ina_rasp(I2C_ADDRESS_RASP);
 
 static unsigned long last_battery_ms = 0;
 
+const int telemetryPowerPin = A7;
+const float referenceVoltage = 4.9;  // Напрежение на 5v+ факт
+const float analogMax = 1023.0;
+const float R1_BAT = 6960.0;
+const float R2_BAT = 10050.0;
+
 static INAData read_voltage(INA226_WE &ina, float calibration) {
   INAData data{};
   ina.readAndClearFlags();
@@ -26,7 +32,7 @@ static INAData read_voltage(INA226_WE &ina, float calibration) {
   return data;
 }
 
-static void send_battery_json(const INAData &drive, const INAData &rasp) {
+static void send_battery_json(const INAData &drive, const INAData &rasp, float telemetryPower_V) {
   StaticJsonDocument<192> doc;
   JsonObject battery = doc.createNestedObject("battery");
   JsonObject bat_drive = battery.createNestedObject("drive");
@@ -39,6 +45,7 @@ static void send_battery_json(const INAData &drive, const INAData &rasp) {
   bat_rasp["current_mA"] = rasp.current_mA;
   bat_rasp["power_mW"] = rasp.power_mW;
 
+  battery["telemetryPower_V"] = telemetryPower_V;
   doc["overflow"] = drive.overflow || rasp.overflow;
 
   serializeJson(doc, Serial);
@@ -56,9 +63,18 @@ void battery_ina_tick(unsigned long now_ms) {
 
   INAData bat_drive = read_voltage(ina_drive, DRIVE_CALIBRATION);
   INAData bat_rasp = read_voltage(ina_rasp, RASPBERRY_CALIBRATION);
+  float telemetryPower_V = readVoltage(telemetryPowerPin, R1_BAT, R2_BAT);
+
 
   if (bat_drive.overflow || bat_rasp.overflow)
     Serial.println(F("Warning: INA226 overflow"));
 
-  send_battery_json(bat_drive, bat_rasp);
+  send_battery_json(bat_drive, bat_rasp, telemetryPower_V);
+}
+
+float readVoltage(byte pin, float R1, float R2) {
+  int raw = analogRead(pin);
+  float vOut = raw * referenceVoltage / analogMax;
+  float vIn = vOut * (R1 + R2) / R2;
+  return vIn;
 }

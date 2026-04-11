@@ -32,3 +32,4 @@ class TelemetryData:
     infrareds: Infrared = field(default_factory=Infrared)
     encoders: Encoder = field(default_factory=Encoder)
     ul1: int = 0
+    telemetry_voltage: float = 0.0
