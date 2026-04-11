@@ -119,7 +119,7 @@ onUnmounted(() => {
               <q-card-section class="full-width">
                 <div class="text-h6 text-center q-mb-md">Камера</div>
                 <q-banner rounded class="bg-grey-9 text-grey-4 text-center">
-                  Поток и управление камерой — заготовка (позже).
+                  Поток и управление камерой — заготовка.
                 </q-banner>
               </q-card-section>
             </q-card>
