@@ -20,6 +20,10 @@ class MotionCommand:
 class Command:
     drive_battery: int = 0
     telemetry_bat: int = 1
+    safety_enable: int = 1
 
     def __str__(self):
-        return f"driverBat:{self.drive_battery};telemetryBat:{self.telemetry_bat}\n"
+        return (
+            f"driverBat:{self.drive_battery};telemetryBat:{self.telemetry_bat};"
+            f"safety:{self.safety_enable}\n"
+        )

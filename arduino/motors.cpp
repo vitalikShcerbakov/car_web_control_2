@@ -2,6 +2,8 @@
 
 #include <Adafruit_MotorShield.h>
 
+#include "safety.h"
+
 static Adafruit_MotorShield AFMS(0x60);
 static Adafruit_DCMotor *motors[4];
 
@@ -69,20 +71,26 @@ void motors_parse_command(char *cmd) {
 }
 
 void motors_drive() {
+  int e1 = targetM1;
+  int e2 = targetM2;
+  int e3 = targetM3;
+  int e4 = targetM4;
+  safety_filter_targets(&e1, &e2, &e3, &e4);
+
   static int prev1 = 0, prev2 = 0, prev3 = 0, prev4 = 0;
   static bool synced = false;
-  if (synced && targetM1 == prev1 && targetM2 == prev2 && targetM3 == prev3 && targetM4 == prev4)
+  if (synced && e1 == prev1 && e2 == prev2 && e3 == prev3 && e4 == prev4)
     return;
   synced = true;
-  prev1 = targetM1;
-  prev2 = targetM2;
-  prev3 = targetM3;
-  prev4 = targetM4;
+  prev1 = e1;
+  prev2 = e2;
+  prev3 = e3;
+  prev4 = e4;
 
-  set_motor(0, targetM1);
-  set_motor(1, targetM2);
-  set_motor(2, targetM3);
-  set_motor(3, targetM4);
+  set_motor(0, e1);
+  set_motor(1, e2);
+  set_motor(2, e3);
+  set_motor(3, e4);
 }
 
 void motors_stop_all() {

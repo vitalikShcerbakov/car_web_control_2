@@ -6,6 +6,7 @@
 #include "relays.h"
 #include "sensors.h"
 #include "telemetry.h"
+#include "safety.h"
 
 #define SERIAL_LINE_BUFFER 128
 static char serial_line[SERIAL_LINE_BUFFER];
@@ -14,6 +15,7 @@ static uint8_t serial_line_len = 0;
 static void handle_serial_line(char *line) {
   motors_parse_command(line);
   relays_parse_command(line);
+  safety_parse_command(line);
 }
 
 void setup() {
@@ -49,12 +51,12 @@ void loop() {
   }
 
   battery_ina_tick(now);
-  telemetry_tick(now);
-
-  motors_drive();
 
   sensors_update();
   updateEncoders();
+
+  telemetry_tick(now);
+  motors_drive();
 
   relays_apply();
 }

@@ -18,6 +18,8 @@ export const useRobotStore = defineStore('robot', {
     maxSpeed: 150,
     lightOn: false,
     sensorPowerOn: true,
+    /** Логика на Arduino: 1 — защита по ИК/УЗ, 0 — выкл */
+    safetyOn: true,
   }),
 
   getters: {
@@ -120,6 +122,11 @@ export const useRobotStore = defineStore('robot', {
     toggleSensorRail() {
       this.sensorPowerOn = !this.sensorPowerOn
       this.sendJson({ telemetry: this.sensorPowerOn ? 1 : 0 })
+    },
+
+    toggleSafety() {
+      this.safetyOn = !this.safetyOn
+      this.sendJson({ safety: this.safetyOn ? 1 : 0 })
     },
   },
 })

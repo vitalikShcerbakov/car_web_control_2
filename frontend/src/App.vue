@@ -97,9 +97,19 @@ onUnmounted(() => {
                 <q-btn
                   :color="robot.sensorPowerOn ? 'negative' : 'primary'"
                   :label="robot.sensorPowerOn ? 'ВЫКЛ' : 'ВКЛ'"
-                  class="full-width"
+                  class="full-width q-mb-md"
                   @click="robot.toggleSensorRail()"
                 />
+                <div class="text-caption text-grey-5 q-mb-xs">Безопасность (Arduino)</div>
+                <q-btn
+                  :color="robot.safetyOn ? 'negative' : 'primary'"
+                  :label="robot.safetyOn ? 'ВЫКЛ защиту' : 'ВКЛ защиту'"
+                  class="full-width q-mb-xs"
+                  @click="robot.toggleSafety()"
+                />
+                <div class="text-caption" :class="robot.safetyOn ? 'text-positive' : 'text-warning'">
+                  {{ robot.safetyOn ? 'ИК + УЗ активны' : 'Защита отключена' }}
+                </div>
               </q-card-section>
             </q-card>
 
