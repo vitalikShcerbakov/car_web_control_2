@@ -1,22 +1,21 @@
 #ifndef ENCODERS_H
 #define ENCODERS_H
 
+#include <Arduino.h>
 #include <Encoder.h>
 
-// Объявляем внешние переменные, чтобы они были доступны в основном файле
+struct EncodersData {
+  long enc1, enc2, enc3, enc4;
+  unsigned long timestamp;
+};
+
 extern Encoder myEnc1;
 extern Encoder myEnc2;
 extern Encoder myEnc3;
 extern Encoder myEnc4;
 
-extern long lastPosition1;
-extern long lastPosition2;
-extern long lastPosition3;
-extern long lastPosition4;
+extern EncodersData encoders;
 
-// Прототипы функций
-void initEncoders();
 void updateEncoders();
-void encoders_to_json();
 
 #endif
