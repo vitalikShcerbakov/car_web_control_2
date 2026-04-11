@@ -1,8 +1,7 @@
 import asyncio
-from dataclasses import asdict
 
 from app.models.telemetry import TelemetryData
-from app.models.commands import MotionCommand, MotorControl
+from app.models.commands import MotionCommand, MotorControl, Command
 from app.core.pid import PIDController
 from app.core.filters import MovingAverageFilter
 
@@ -11,6 +10,7 @@ class RobotController:
         self.telemetry = TelemetryData()
         self.motion_command = MotionCommand()
         self.manual_control = MotionCommand()
+        self.command = Command()
 
         self.speed_pid = PIDController(1.2, 0.05, 0.1)
         self.angle_pid = PIDController(2.0, 0.01, 0.2)
@@ -18,35 +18,44 @@ class RobotController:
         self.filter = MovingAverageFilter()
 
     def update_telemetry(self, data):
-        # self.telemetry.encoder_left = data.get('enc_left', 0)
-        # self.telemetry.encoder_right = data.get('enc_right', 0)
+        battery_driver = None
+        battery_raspberry = None
         try:
             if data is None:
                 return None
-            battery_drive = data.get("battery", {}).get("drive")
+            battery = data.get("battery")
+            if battery is not None:
+                battery_driver = battery.get("drive")
+                battery_raspberry = battery.get("raspberry")
             sensor_data = data.get("telemetry", {})
             encoders = data.get("encoders")
             ir_sensors = sensor_data.get("IRSensor")
             ultrasonic_sensor = sensor_data.get("ultrasonicSensor")
             if ir_sensors is not None:
-                self.telemetry.ir1 = ir_sensors.get("ir1")
-                self.telemetry.ir2 = ir_sensors.get("ir2")
-                self.telemetry.ir3 = ir_sensors.get("ir3")
-                self.telemetry.ir4 = ir_sensors.get("ir4")
+                self.telemetry.infrareds.ir1 = ir_sensors.get("ir1")
+                self.telemetry.infrareds.ir2 = ir_sensors.get("ir2")
+                self.telemetry.infrareds.ir3 = ir_sensors.get("ir3")
+                self.telemetry.infrareds.ir4 = ir_sensors.get("ir4")
             if encoders is not None:
-                self.telemetry.enc1 = encoders.get("enc1")
-                self.telemetry.enc2 = encoders.get("enc2")
-                self.telemetry.enc3 = encoders.get("enc3")
-                self.telemetry.enc4 = encoders.get("enc4")
+                self.telemetry.encoders.enc1 = encoders.get("enc1")
+                self.telemetry.encoders.enc2 = encoders.get("enc2")
+                self.telemetry.encoders.enc3 = encoders.get("enc3")
+                self.telemetry.encoders.enc4 = encoders.get("enc4")
             if ultrasonic_sensor is not None:
                 self.telemetry.ul1 = ultrasonic_sensor.get("distance")
-            if battery_drive is not None:
-                self.telemetry.bus_V = battery_drive.get("bus_V")
-                self.telemetry.current_mA = battery_drive.get("current_mA")
-                self.telemetry.power_mW = battery_drive.get("power_mW")
-                self.telemetry.timestamp = asyncio.get_event_loop().time()
+            if battery_driver is not None:
+                self.telemetry.battery_driver.bus_V = battery_driver.get("bus_V")
+                self.telemetry.battery_driver.current_mA = battery_driver.get("current_mA")
+                self.telemetry.battery_driver.power_mW = battery_driver.get("power_mW")
+                self.telemetry.battery_driver.timestamp = asyncio.get_event_loop().time()
+            if battery_raspberry is not None:
+                self.telemetry.battery_raspberry.bus_V = battery_raspberry.get("bus_V")
+                self.telemetry.battery_raspberry.current_mA = battery_raspberry.get("current_mA")
+                self.telemetry.battery_raspberry.power_mW = battery_raspberry.get("power_mW")
+                self.telemetry.battery_raspberry.timestamp = asyncio.get_event_loop().time()
         except Exception as e:
-            print('error: ', e)
+            print('error: ', e, 'data: ', data)
+
 
     def compute_motor_control(self):
         """ Вычислить управление двигателем"""
@@ -61,7 +70,6 @@ class RobotController:
         )
 
     def gas_steer_to_motor(self, gas, steer):
-        m1, m2, m3, m4 = 0, 0, 0, 0
         if steer == 0:
             m1, m2, m3, m4 = [gas] * 4
         else:
@@ -71,3 +79,5 @@ class RobotController:
 
     def get_speed(self):
         return self.filter.update(self.telemetry.encoder_left)
+
+

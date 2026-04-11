@@ -16,8 +16,14 @@ class MotionCommand:
     # target_speed: int = 0
     # target_angle: float = 0
 
+    def __str__(self):
+        return f"M1:{self.M1};M2:{self.M2};M3:{self.M3};M4:{self.M4}\n"
+
 
 @dataclass
-class LastMotorCommand:
-    G: int = 0
-    R: int = 0
+class Command:
+    drive_battery: int = 0
+    telemetry_bat: int = 1
+
+    def __str__(self):
+        return f"driverBat:{self.drive_battery};telemetryBat:{self.telemetry_bat}\n"

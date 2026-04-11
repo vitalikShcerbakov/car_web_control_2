@@ -118,9 +118,9 @@ function moveCamera(step) {
 
   document.getElementById("camAngle").textContent = camAngle;
 
-  ws.send(JSON.stringify({
-    camera_angle: camAngle
-  }));
+//  ws.send(JSON.stringify({
+//    camera_angle: camAngle
+//  }));
 }
 // клавиатура
 document.addEventListener("keydown", e => {
@@ -149,16 +149,25 @@ document.addEventListener("keyup", e => {
 });
 
 let lightOn = false;
+let telemetryOn = true;
 
 function toggleLight() {
   lightOn = !lightOn;
-
   document.getElementById("lightStatus").textContent = lightOn ? "ON" : "OFF";
   document.getElementById("lightStatus").style.color = lightOn ? "#4CAF50" : "#F44336";
   document.getElementById("lightBtn").textContent = lightOn ? "ВЫКЛ" : "ВКЛ";
-
   ws.send(JSON.stringify({
     light: lightOn ? 1 : 0
+  }));
+}
+
+function toggleTelemetry() {
+  telemetryOn = !telemetryOn;
+  document.getElementById("telemetryStatus").textContent = telemetryOn ? "ON" : "OFF";
+  document.getElementById("telemetryStatus").style.color = telemetryOn ? "#4CAF50" : "#F44336";
+  document.getElementById("telemetryBtn").textContent = telemetryOn ? "ВЫКЛ" : "ВКЛ";
+  ws.send(JSON.stringify({
+    telemetry: telemetryOn ? 1 : 0
   }));
 }
 

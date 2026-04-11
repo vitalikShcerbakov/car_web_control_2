@@ -1,6 +1,10 @@
 import asyncio
 import json
-from app.models.commands import MotionCommand
+from copy import copy
+from typing import Union
+
+from app.models.commands import MotionCommand, Command
+
 
 class ArduinoProtocol(asyncio.Protocol):
     def __init__(self, controller):
@@ -8,16 +12,18 @@ class ArduinoProtocol(asyncio.Protocol):
         self.buffer = ""
         self.transport = None
         self.queue = asyncio.Queue()
-        self.last_command = MotionCommand()
+        self.last_state = {Command: None, MotionCommand: None}
 
-    def connection_made(self, transport):
-        self.transport = transport
-        asyncio.create_task(self.writer())
+    # def connection_made(self, transport):
+    #     self.transport = transport
+    #     asyncio.create_task(self.writer())
 
     async def writer(self):
         while True:
             cmd = await self.queue.get()
             if self.transport:
+                cmd = str(cmd)
+                print('cmd: ', cmd)
                 self.transport.write(cmd.encode())
 
     def data_received(self, data):
@@ -30,8 +36,14 @@ class ArduinoProtocol(asyncio.Protocol):
             except:
                 pass
 
-    async def send_command(self, control):
-        cmd = f"M1:{control.M1};M2:{control.M2};M3:{control.M3};M4:{control.M4}\n"
-        if self.last_command != control:
-            await self.queue.put(cmd)
-            self.last_command = control
+    async def send_command(self, control: Union[Command, MotionCommand]):
+        try:
+            if self.last_state[type(control)] != control:
+                print('control: ', control)
+                await self.queue.put(control)
+                self.last_state[type(control)] = copy(control)
+        except Exception as e:
+            print('error: ', e)
+            pass
+
+
