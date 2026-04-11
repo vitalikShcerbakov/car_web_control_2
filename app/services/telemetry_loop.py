@@ -1,13 +1,22 @@
 import asyncio
 from dataclasses import asdict
 
+
 async def telemetry_loop(robot, manager):
     while True:
-        await manager.broadcast({
-            # "type": "telemetry",
-            # "data": asdict(robot.telemetry)
-            "battery": {"drive": asdict(robot.telemetry)}
-            # "data": {"battery": {"drive": asdict(robot.telemetry)}}
-        })
-
+        tel = robot.telemetry
+        await manager.broadcast(
+            {
+                "telemetry": {
+                    "IRSensor": asdict(tel.infrareds),
+                    "ultrasonicSensor": {"distance": tel.ul1},
+                },
+                "encoders": asdict(tel.encoders),
+                "battery": {
+                    "drive": asdict(tel.battery_driver),
+                    "raspberry": asdict(tel.battery_raspberry),
+                    "telemetry_voltage": tel.telemetry_voltage,
+                },
+            }
+        )
         await asyncio.sleep(0.05)

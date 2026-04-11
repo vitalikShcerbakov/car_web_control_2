@@ -5,7 +5,7 @@ import asyncio
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi import FastAPI, WebSocket, Request
-from fastapi.responses import HTMLResponse, StreamingResponse
+from fastapi.responses import HTMLResponse, StreamingResponse, FileResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 
@@ -56,7 +56,15 @@ async def startup():
 app.mount("/static", StaticFiles(directory=str(BASE_DIR / "static")), name="static")
 templates = Jinja2Templates(directory=str(BASE_DIR / "templates"))
 
+SPA_DIR = BASE_DIR / "static" / "spa"
+SPA_ASSETS = SPA_DIR / "assets"
+if SPA_ASSETS.is_dir():
+    app.mount("/assets", StaticFiles(directory=str(SPA_ASSETS)), name="spa_assets")
+
 
 @app.get("/", response_class=HTMLResponse)
 async def index(request: Request):
+    spa_index = SPA_DIR / "index.html"
+    if spa_index.is_file():
+        return FileResponse(spa_index)
     return templates.TemplateResponse("index.html", {"request": request})

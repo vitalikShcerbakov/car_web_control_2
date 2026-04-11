@@ -15,7 +15,7 @@ static unsigned long echo_end = 0;
 static bool last_echo_state = LOW;
 static bool new_data = false;
 
-static float distance = 400;
+static float distance = 300;
 static unsigned long last_measure = 0;
 
 SensorData sensors;

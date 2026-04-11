@@ -11,10 +11,6 @@ class MotionCommand:
     M2: int = 0
     M3: int = 0
     M4: int = 0
-    # GAS: int = 0
-    # STEER: int = 0
-    # target_speed: int = 0
-    # target_angle: float = 0
 
     def __str__(self):
         return f"M1:{self.M1};M2:{self.M2};M3:{self.M3};M4:{self.M4}\n"
