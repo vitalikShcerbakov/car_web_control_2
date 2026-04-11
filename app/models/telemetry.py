@@ -27,7 +27,7 @@ class Encoder:
 
 @dataclass
 class TelemetryData:
-    battery_raspberry: Battery =field(default_factory=Battery)  
+    battery_raspberry: Battery = field(default_factory=Battery)
     battery_driver: Battery = field(default_factory=Battery)
     infrareds: Infrared = field(default_factory=Infrared)
     encoders: Encoder = field(default_factory=Encoder)

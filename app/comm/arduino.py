@@ -14,9 +14,9 @@ class ArduinoProtocol(asyncio.Protocol):
         self.queue = asyncio.Queue()
         self.last_state = {Command: None, MotionCommand: None}
 
-    # def connection_made(self, transport):
-    #     self.transport = transport
-    #     asyncio.create_task(self.writer())
+    def connection_made(self, transport):
+        self.transport = transport
+        asyncio.create_task(self.writer())
 
     async def writer(self):
         while True:
