@@ -6,9 +6,9 @@
 
 static bool g_safety_enabled = true;
 
-static constexpr float US_HARD_CM = 20.0f;
-static constexpr float US_SOFT_CM = 30.0f;
-static constexpr float FWD_CAP_SOFT = 100.0f;
+/** УЗ только замедляет вперёд (|F|), не останавливает. Остановка вперёд/назад — только ИК. */
+static constexpr float US_SLOW_ZONE_CM = 30.0f;
+static constexpr float FWD_CAP_NEAR_CM = 100.0f;
 /** Выше — «нет достоверного эха» (NewPing: 0 см или запасной дальний предел) */
 static constexpr float US_TRUST_MAX_CM = 350.0f;
 
@@ -49,12 +49,8 @@ void safety_filter_targets(int *m1, int *m2, int *m3, int *m4) {
   if (front_ir && F > 0.0f) F = 0.0f;
   if (rear_ir && F < 0.0f) F = 0.0f;
 
-  if (F > 0.0f && ultrasonic_valid_cm(dist)) {
-    if (dist <= US_HARD_CM) {
-      F = 0.0f;
-    } else if (dist <= US_SOFT_CM) {
-      if (F > FWD_CAP_SOFT) F = FWD_CAP_SOFT;
-    }
+  if (F > 0.0f && ultrasonic_valid_cm(dist) && dist <= US_SLOW_ZONE_CM) {
+    if (F > FWD_CAP_NEAR_CM) F = FWD_CAP_NEAR_CM;
   }
 
   L = F + T;
