@@ -76,3 +76,25 @@ class Raspberry:
             return {"error": "vcgencmd not found (not a Raspberry Pi?)"}
         except Exception as e:
             return {"error": str(e)}
+
+
+rasp = Raspberry()
+print(rasp.detect_raspberry_pi())
+print('-' * 30)
+print(rasp.read_system_info())
+print('-' * 30)
+print(rasp.get_throttled_status())
+print('-' * 30)
+print(rasp.read_temp())
+
+
+'''
+True
+------------------------------
+{'cpu_percent': 100.0, 'memory_percent': 6.4, 'disk_percent': 15.1}
+------------------------------
+{'raw': '0x0', 'value': 0, 'flags': {'undervoltage_now': False, 'freq_capped_now': False, 'throttled_now': False, 'soft_temp_limit_now': False, 'undervoltage_past': False, 'freq_capped_past': False, 'throttled_past': False, 'soft_temp_limit_past': False}, 'issues_now': [], 'issues_past': [], 'ok': True}
+------------------------------
+48.3
+
+'''
