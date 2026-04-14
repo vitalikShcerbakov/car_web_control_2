@@ -28,7 +28,8 @@ def router(manager, robot):
     router = APIRouter()
     key_command = {
         'light': 'drive_battery',
-        'telemetry': 'telemetry_bat'
+        'telemetry': 'telemetry_bat',
+        'safety': 'safety_enable',
     }
 
     @router.websocket("/ws")
@@ -41,8 +42,9 @@ def router(manager, robot):
                 steer = data.get("steer", 0)
                 robot.manual_control = robot.gas_steer_to_motor(gas, steer)
                 for key, value in data.items():
-                    if key_command.get(key, '') in robot.command.__dict__:
-                        robot.command.__setattr__(key_command.get(key, "empty"), value)
+                    attr = key_command.get(key)
+                    if attr and attr in robot.command.__dict__:
+                        robot.command.__setattr__(attr, int(value))
 
         except Exception as e:
             print('ws error: ', type(e), e)
