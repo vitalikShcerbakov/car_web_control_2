@@ -8,6 +8,7 @@ from fastapi import FastAPI, WebSocket, Request
 from fastapi.responses import HTMLResponse, StreamingResponse, FileResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
+import serial_asyncio
 
 from app.core.arduino import find_arduino_port
 from app.core.robot import RobotController
@@ -16,7 +17,6 @@ from app.comm.websocket import ConnectionManager, router as ws_router
 from app.services.control_loop import control_loop
 from app.services.telemetry_loop import telemetry_loop
 
-import serial_asyncio
 
 BASE_DIR = Path(__file__).resolve().parent
 app = FastAPI()

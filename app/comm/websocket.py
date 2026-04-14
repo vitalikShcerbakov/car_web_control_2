@@ -32,6 +32,20 @@ def router(manager, robot):
         'safety': 'safety_enable',
     }
 
+    @router.get("/video")
+    def video_feed():
+        if not camera_available:
+            # можно либо 503
+            pass
+        return StreamingResponse(
+            camera.gen_frames(),
+            media_type="multipart/x-mixed-replace; boundary=frame")
+
+    @router.on_event("shutdown")
+    def shutdown_event():
+        if camera_available and hasattr(camera, "picam2"):
+            camera.picam2.stop()
+
     @router.websocket("/ws")
     async def ws(ws: WebSocket):
         await manager.connect(ws)
