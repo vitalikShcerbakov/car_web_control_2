@@ -16,6 +16,7 @@ from app.comm.arduino import ArduinoProtocol
 from app.comm.websocket import ConnectionManager, router as ws_router
 from app.services.control_loop import control_loop
 from app.services.telemetry_loop import telemetry_loop
+from app.services.raspberry_info_loop import rasbp_info_loop
 
 
 BASE_DIR = Path(__file__).resolve().parent
@@ -52,6 +53,7 @@ async def startup():
 
     asyncio.create_task(control_loop(robot, lambda: arduino_proto))
     asyncio.create_task(telemetry_loop(robot, manager))
+    asyncio.create_task(rasbp_info_loop(robot))
 
 app.mount("/static", StaticFiles(directory=str(BASE_DIR / "static")), name="static")
 templates = Jinja2Templates(directory=str(BASE_DIR / "templates"))
