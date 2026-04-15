@@ -19,7 +19,7 @@ def read_soc():
     return swapped / 256
 
 def read_power():
-    data = subprocess.check_output(["vcgencmd","pmic_read_adc"]).decode()
+    data = subprocess.check_output(["vcgencmd", "pmic_read_adc"]).decode()
 
     currents = {}
     volts = {}
@@ -72,3 +72,6 @@ while True:
         print("UPS not detected")
 
     time.sleep(1)
+
+
+

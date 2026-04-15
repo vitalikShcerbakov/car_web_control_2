@@ -2,10 +2,12 @@ import asyncio
 
 from app.models.telemetry import TelemetryData
 from app.models.commands import MotionCommand, MotorControl, Command
+from app.models.raspberry_info import RaspberryInfo
 
 
 class RobotController:
     def __init__(self):
+        self.raspberry_info = RaspberryInfo()
         self.telemetry = TelemetryData()
         self.motion_command = MotionCommand()
         self.manual_control = MotionCommand()

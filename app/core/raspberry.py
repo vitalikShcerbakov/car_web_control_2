@@ -1,8 +1,16 @@
 import subprocess
-
+import smbus
 import psutil
 
+import re
+
+from app.models.raspberry_info import RaspberryInfo
+
+
 class Raspberry:
+    UPS_ADDR = 0x36
+    bus = smbus.SMBus(1)
+
     @staticmethod
     def detect_raspberry_pi() -> bool:
         try:
@@ -77,24 +85,80 @@ class Raspberry:
         except Exception as e:
             return {"error": str(e)}
 
-
-rasp = Raspberry()
-print(rasp.detect_raspberry_pi())
-print('-' * 30)
-print(rasp.read_system_info())
-print('-' * 30)
-print(rasp.get_throttled_status())
-print('-' * 30)
-print(rasp.read_temp())
+    @classmethod
+    def read_voltage(cls):
+        """ Напряжение на акб (последовательно 4 банки)"""
+        read = cls.bus.read_word_data(cls.UPS_ADDR, 0x02)
+        swapped = ((read & 0xff) << 8) | (read >> 8)
+        return swapped * 0.000078125
 
 
-'''
-True
-------------------------------
-{'cpu_percent': 100.0, 'memory_percent': 6.4, 'disk_percent': 15.1}
-------------------------------
-{'raw': '0x0', 'value': 0, 'flags': {'undervoltage_now': False, 'freq_capped_now': False, 'throttled_now': False, 'soft_temp_limit_now': False, 'undervoltage_past': False, 'freq_capped_past': False, 'throttled_past': False, 'soft_temp_limit_past': False}, 'issues_now': [], 'issues_past': [], 'ok': True}
-------------------------------
-48.3
+    @classmethod
+    def read_soc(cls):
+        """ Процент заряда. """
+        read = cls.bus.read_word_data(cls.UPS_ADDR, 0x04)
+        swapped = ((read & 0xff) << 8) | (read >> 8)
+        return swapped / 256
 
-'''
+    @staticmethod
+    def read_power():
+        """ Потребляемая мощность. """
+        data = subprocess.check_output(["vcgencmd", "pmic_read_adc"]).decode()
+
+        currents = {}
+        volts = {}
+
+        for line in data.splitlines():
+            m = re.search(r'(\S+)\s+(current|volt)\(\d+\)=([\d\.]+)', line)
+            if m:
+                name, typ, value = m.groups()
+                if typ == "current":
+                    currents[name] = float(value)
+                else:
+                    volts[name] = float(value)
+        powers = {}
+        total = 0
+        for name in currents:
+            vname = name.replace("_A", "_V")
+            if vname in volts:
+                p = currents[name] * volts[vname]
+                powers[name] = p
+                total += p
+        return powers, total
+
+    @classmethod
+    def update_info(cls, obj: RaspberryInfo):
+        obj.temperature = cls.read_temp()
+        obj.voltage = cls.read_voltage()
+        obj.charge = cls.read_soc()
+
+        powers, total = cls.read_power()
+        obj.power.total = total
+        # for name, value in powers.items():
+        #     obj.power.name = value
+
+        system_info: dict = cls.read_system_info()
+        obj.cpu_percent = system_info.get('cpu_percent')
+        obj.memory_percent = system_info.get('memory_percent')
+        obj.disk_percent = system_info.get('disk_percent')
+
+        throttled_status = cls.get_throttled_status()
+        obj.throttled_status.raw = throttled_status.get('raw')
+        obj.throttled_status.value = throttled_status.get('value')
+        obj.throttled_status.flags = throttled_status.get('flags')
+        obj.throttled_status.issues_now = throttled_status.get('issues_now')
+        obj.throttled_status.issues_past = throttled_status.get('issues_past')
+        obj.throttled_status.ok = throttled_status.get('ok')
+
+
+
+
+if __name__ == '__main__':
+    rasp = Raspberry()
+    print(rasp.detect_raspberry_pi())
+    print(rasp.read_system_info())
+    print(rasp.get_throttled_status())
+    print(rasp.read_temp())
+    print(rasp.read_voltage())
+    print(rasp.read_power())
+    print(rasp.read_soc())
