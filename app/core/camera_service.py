@@ -1,15 +1,5 @@
 import time
-from camera_service import (
-    camera_available,
-    PiCameraService,
-    DummyCameraService,
-)
 
-# Камера
-if camera_available:
-    camera = PiCameraService()
-else:
-    camera = DummyCameraService()
 
 camera_available = False
 

@@ -1,5 +1,18 @@
 from fastapi import WebSocket, APIRouter
 
+from app.core.camera_service import (
+    camera_available,
+    PiCameraService,
+    DummyCameraService,
+)
+
+# Камера
+if camera_available:
+    camera = PiCameraService()
+else:
+    camera = DummyCameraService()
+
+
 class ConnectionManager:
     def __init__(self):
         self.active = []

@@ -4,10 +4,14 @@ import psutil
 
 import re
 
-from app.models.raspberry_info import RaspberryInfo
+#from app.models.raspberry_info import RaspberryInfo
 
 
 class Raspberry:
+    """
+    Скорость вращение вентелятора
+    /sys/devices/platform/cooling_fan/hwmon/*/fan1_input
+    """
     UPS_ADDR = 0x36
     bus = smbus.SMBus(1)
 
@@ -127,7 +131,7 @@ class Raspberry:
         return powers, total
 
     @classmethod
-    def update_info(cls, obj: RaspberryInfo):
+    def update_info(cls, obj):  # raspberry_info
         obj.temperature = cls.read_temp()
         obj.voltage = cls.read_voltage()
         obj.charge = cls.read_soc()
@@ -162,3 +166,4 @@ if __name__ == '__main__':
     print(rasp.read_voltage())
     print(rasp.read_power())
     print(rasp.read_soc())
+    print(rasp.get_throttled_status())
