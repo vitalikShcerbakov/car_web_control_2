@@ -3,7 +3,7 @@ from dataclasses import dataclass, field
 @dataclass
 class Power:
     total: float = 0.0
-    ...
+    powers: dict = field(default_factory=dict)
 
 @dataclass
 class Flags:

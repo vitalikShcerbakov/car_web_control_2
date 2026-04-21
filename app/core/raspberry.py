@@ -138,8 +138,7 @@ class Raspberry:
 
         powers, total = cls.read_power()
         obj.power.total = total
-        # for name, value in powers.items():
-        #     obj.power.name = value
+        obj.power.powers = powers
 
         system_info: dict = cls.read_system_info()
         obj.cpu_percent = system_info.get('cpu_percent')
