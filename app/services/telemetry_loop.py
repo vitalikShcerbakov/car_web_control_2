@@ -1,11 +1,17 @@
 import asyncio
 from dataclasses import asdict
 
+from app.core.raspberry import Raspberry
+
 
 async def telemetry_loop(robot, manager):
+    raspberry = Raspberry()
     while True:
-        tel = robot.telemetry
+        # Update info rasbperry
         raspberry_info = robot.raspberry_info
+        raspberry.update_info(raspberry_info)
+
+        tel = robot.telemetry
         await manager.broadcast(
             {
                 "telemetry": {
